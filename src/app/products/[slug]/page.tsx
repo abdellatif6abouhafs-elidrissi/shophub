@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -50,6 +50,44 @@ export default function ProductDetailPage() {
   const [isWishlisted, setIsWishlisted] = useState(false);
 
   const { addItem } = useCartStore();
+
+  // Check if product is in wishlist on load
+  useEffect(() => {
+    if (product) {
+      const saved = localStorage.getItem('wishlist');
+      if (saved) {
+        const wishlist = JSON.parse(saved);
+        setIsWishlisted(wishlist.some((item: { id: string }) => item.id === product._id));
+      }
+    }
+  }, [product]);
+
+  const toggleWishlist = () => {
+    if (!product) return;
+
+    const saved = localStorage.getItem('wishlist');
+    let wishlist = saved ? JSON.parse(saved) : [];
+
+    if (isWishlisted) {
+      // Remove from wishlist
+      wishlist = wishlist.filter((item: { id: string }) => item.id !== product._id);
+      toast.success('Removed from wishlist');
+    } else {
+      // Add to wishlist
+      wishlist.push({
+        id: product._id,
+        name: product.name,
+        price: product.price,
+        image: product.images[0],
+        slug: product.slug,
+        stock: product.stock,
+      });
+      toast.success('Added to wishlist!');
+    }
+
+    localStorage.setItem('wishlist', JSON.stringify(wishlist));
+    setIsWishlisted(!isWishlisted);
+  };
 
   const { data: product, isLoading } = useQuery({
     queryKey: ['product', slug],
@@ -294,7 +332,7 @@ export default function ProductDetailPage() {
               <Button
                 size="lg"
                 variant="outline"
-                onClick={() => setIsWishlisted(!isWishlisted)}
+                onClick={toggleWishlist}
               >
                 <Heart
                   className={`h-5 w-5 ${
