@@ -26,13 +26,24 @@ interface WishlistItem {
 
 export default function WishlistPage() {
   const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([]);
+  const [isLoaded, setIsLoaded] = useState(false);
   const { addItem } = useCartStore();
 
   useEffect(() => {
-    // Load wishlist from localStorage
-    const saved = localStorage.getItem('wishlist');
-    if (saved) {
-      setWishlistItems(JSON.parse(saved));
+    // Load wishlist from localStorage (client-side only)
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('wishlist');
+      console.log('Wishlist from localStorage:', saved);
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          console.log('Parsed wishlist:', parsed);
+          setWishlistItems(parsed);
+        } catch (e) {
+          console.error('Error parsing wishlist:', e);
+        }
+      }
+      setIsLoaded(true);
     }
   }, []);
 
@@ -61,6 +72,19 @@ export default function WishlistPage() {
     localStorage.removeItem('wishlist');
     toast.success('Wishlist cleared');
   };
+
+  // Show loading while checking localStorage
+  if (!isLoaded) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+        <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-center">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (wishlistItems.length === 0) {
     return (

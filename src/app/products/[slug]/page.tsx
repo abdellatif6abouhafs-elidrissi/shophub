@@ -77,27 +77,36 @@ export default function ProductDetailPage() {
   const toggleWishlist = () => {
     if (!product) return;
 
+    if (typeof window === 'undefined') return;
+
     const saved = localStorage.getItem('wishlist');
     let wishlist = saved ? JSON.parse(saved) : [];
+
+    console.log('Current wishlist:', wishlist);
+    console.log('Product to add/remove:', product._id);
 
     if (isWishlisted) {
       // Remove from wishlist
       wishlist = wishlist.filter((item: { id: string }) => item.id !== product._id);
+      console.log('After removing:', wishlist);
       toast.success('Removed from wishlist');
     } else {
       // Add to wishlist
-      wishlist.push({
+      const newItem = {
         id: product._id,
         name: product.name,
         price: product.price,
         image: product.images[0],
         slug: product.slug,
         stock: product.stock,
-      });
+      };
+      wishlist.push(newItem);
+      console.log('After adding:', wishlist);
       toast.success('Added to wishlist!');
     }
 
     localStorage.setItem('wishlist', JSON.stringify(wishlist));
+    console.log('Saved to localStorage:', localStorage.getItem('wishlist'));
     setIsWishlisted(!isWishlisted);
   };
 
