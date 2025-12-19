@@ -51,17 +51,16 @@ async function fetchOrders(page: number, search: string, status: string) {
     page: page.toString(),
     limit: '10',
   });
-  if (search) params.append('search', search);
   if (status) params.append('status', status);
 
-  const res = await fetch(`/api/admin/orders?${params}`);
+  const res = await fetch(`/api/orders?${params}`);
   const data = await res.json();
   return data;
 }
 
 async function updateOrderStatus(id: string, status: string) {
-  const res = await fetch(`/api/admin/orders/${id}`, {
-    method: 'PATCH',
+  const res = await fetch(`/api/orders/${id}`, {
+    method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ orderStatus: status }),
   });
