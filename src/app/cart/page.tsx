@@ -21,13 +21,25 @@ import toast from 'react-hot-toast';
 
 export default function CartPage() {
   const router = useRouter();
-  const { items, removeItem, updateQuantity, getTotalPrice, getTotalItems, clearCart, coupon, getDiscountedTotal } = useCartStore();
+  const { items, removeItem, updateQuantity, getTotalPrice, getTotalItems, clearCart, coupon, getDiscountedTotal, _hasHydrated } = useCartStore();
 
   const subtotal = getTotalPrice();
   const discount = coupon?.discount || 0;
   const shipping = subtotal > 100 ? 0 : 10;
   const tax = (subtotal - discount) * 0.08;
   const total = subtotal + shipping + tax - discount;
+
+  // Show loading while hydrating
+  if (!_hasHydrated) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-950">
+        <div className="text-center">
+          <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
+          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading cart...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (items.length === 0) {
     return (

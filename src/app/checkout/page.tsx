@@ -32,7 +32,7 @@ function CheckoutForm() {
   const { data: session } = useSession();
   const stripe = useStripe();
   const elements = useElements();
-  const { items, getTotalPrice, clearCart } = useCartStore();
+  const { items, getTotalPrice, clearCart, _hasHydrated } = useCartStore();
 
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
@@ -59,10 +59,11 @@ function CheckoutForm() {
   }, [session, router]);
 
   useEffect(() => {
-    if (items.length === 0) {
+    // Only redirect after hydration is complete and cart is truly empty
+    if (_hasHydrated && items.length === 0) {
       router.push('/products');
     }
-  }, [items, router]);
+  }, [items, router, _hasHydrated]);
 
   const handleAddressChange = (field: keyof AddressForm, value: string) => {
     setAddress((prev) => ({ ...prev, [field]: value }));
@@ -161,6 +162,18 @@ function CheckoutForm() {
       setIsLoading(false);
     }
   };
+
+  // Show loading while hydrating or if no session/items
+  if (!_hasHydrated) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-950">
+        <div className="text-center">
+          <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
+          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading checkout...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!session || items.length === 0) {
     return null;

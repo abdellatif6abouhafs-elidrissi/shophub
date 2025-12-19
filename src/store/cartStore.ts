@@ -26,6 +26,8 @@ interface CartState {
   items: CartItem[];
   isOpen: boolean;
   coupon: AppliedCoupon | null;
+  _hasHydrated: boolean;
+  setHasHydrated: (state: boolean) => void;
   addItem: (item: Omit<CartItem, 'quantity'> & { quantity?: number }) => void;
   removeItem: (productId: string, variant?: { name: string; value: string }) => void;
   updateQuantity: (
@@ -50,6 +52,8 @@ export const useCartStore = create<CartState>()(
       items: [],
       isOpen: false,
       coupon: null,
+      _hasHydrated: false,
+      setHasHydrated: (state) => set({ _hasHydrated: state }),
 
       addItem: (item) => {
         set((state) => {
@@ -136,6 +140,9 @@ export const useCartStore = create<CartState>()(
     }),
     {
       name: 'cart-storage',
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true);
+      },
     }
   )
 );
