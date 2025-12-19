@@ -134,14 +134,13 @@ const productSchema = new Schema<IProductDocument>(
 );
 
 // Create slug from name before validation
-productSchema.pre('validate', function (next) {
+productSchema.pre('validate', function () {
   if (this.name && !this.slug) {
     this.slug = this.name
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/(^-|-$)/g, '');
   }
-  next();
 });
 
 // Indexes for faster queries

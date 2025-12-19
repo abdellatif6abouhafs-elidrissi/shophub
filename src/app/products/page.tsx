@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Filter, SlidersHorizontal, X, ChevronDown } from 'lucide-react';
+import { Filter, SlidersHorizontal, X, Loader2 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import ProductCard from '@/components/product/ProductCard';
 import { ProductGridSkeleton } from '@/components/ui/Skeleton';
@@ -32,7 +32,7 @@ async function fetchCategories(): Promise<ICategory[]> {
   return data.data || [];
 }
 
-export default function ProductsPage() {
+function ProductsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -418,5 +418,21 @@ export default function ProductsPage() {
         </div>
       )}
     </div>
+  );
+}
+
+function ProductsLoading() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-950">
+      <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+    </div>
+  );
+}
+
+export default function ProductsPage() {
+  return (
+    <Suspense fallback={<ProductsLoading />}>
+      <ProductsContent />
+    </Suspense>
   );
 }

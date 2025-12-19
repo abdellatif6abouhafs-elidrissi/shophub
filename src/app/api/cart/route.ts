@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
     const validation = addToCartSchema.safeParse(body);
     if (!validation.success) {
       return NextResponse.json(
-        { success: false, error: validation.error.errors[0].message },
+        { success: false, error: validation.error.issues[0].message },
         { status: 400 }
       );
     }
@@ -183,7 +183,7 @@ export async function PUT(request: NextRequest) {
     const validation = updateCartSchema.safeParse(body);
     if (!validation.success) {
       return NextResponse.json(
-        { success: false, error: validation.error.errors[0].message },
+        { success: false, error: validation.error.issues[0].message },
         { status: 400 }
       );
     }

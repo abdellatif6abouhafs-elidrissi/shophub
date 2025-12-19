@@ -36,9 +36,10 @@ export async function GET(
     }
 
     // Check if user owns the order or is admin
+    const orderUserId = (order.user as any)?._id?.toString() || order.user?.toString();
     if (
       session.user.role !== 'admin' &&
-      (order.user as { _id: string })._id.toString() !== session.user.id
+      orderUserId !== session.user.id
     ) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
@@ -85,7 +86,7 @@ export async function PUT(
     const validation = updateOrderSchema.safeParse(body);
     if (!validation.success) {
       return NextResponse.json(
-        { success: false, error: validation.error.errors[0].message },
+        { success: false, error: validation.error.issues[0].message },
         { status: 400 }
       );
     }

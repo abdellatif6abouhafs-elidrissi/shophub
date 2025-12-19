@@ -1,7 +1,7 @@
 import mongoose, { Document, Model, Schema } from 'mongoose';
 
 export interface ICartItem {
-  product: mongoose.Types.ObjectId;
+  product: mongoose.Types.ObjectId | string;
   quantity: number;
   price: number;
   variant?: {
@@ -70,10 +70,9 @@ const cartSchema = new Schema<ICartDocument>(
 );
 
 // Calculate totals before saving
-cartSchema.pre('save', function (next) {
+cartSchema.pre('save', function () {
   this.totalItems = this.items.reduce((sum, item) => sum + item.quantity, 0);
   this.totalPrice = this.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  next();
 });
 
 // Index for user lookup

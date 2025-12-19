@@ -51,14 +51,13 @@ const categorySchema = new Schema<ICategoryDocument>(
 );
 
 // Create slug from name before validation
-categorySchema.pre('validate', function (next) {
+categorySchema.pre('validate', function () {
   if (this.name && !this.slug) {
     this.slug = this.name
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/(^-|-$)/g, '');
   }
-  next();
 });
 
 // Index for faster queries

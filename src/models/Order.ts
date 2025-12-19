@@ -11,7 +11,7 @@ export interface IOrderAddress {
 }
 
 export interface IOrderItem {
-  product: mongoose.Types.ObjectId;
+  product: mongoose.Types.ObjectId | string;
   name: string;
   image: string;
   price: number;
@@ -25,7 +25,7 @@ export interface IOrderItem {
 export interface IOrderDocument extends Document {
   _id: mongoose.Types.ObjectId;
   orderNumber: string;
-  user: mongoose.Types.ObjectId;
+  user: mongoose.Types.ObjectId | string;
   items: IOrderItem[];
   shippingAddress: IOrderAddress;
   billingAddress?: IOrderAddress;
@@ -159,7 +159,7 @@ const orderSchema = new Schema<IOrderDocument>(
 );
 
 // Generate order number before validation
-orderSchema.pre('validate', async function (next) {
+orderSchema.pre('validate', async function () {
   if (!this.orderNumber) {
     const date = new Date();
     const year = date.getFullYear().toString().slice(-2);
@@ -167,7 +167,6 @@ orderSchema.pre('validate', async function (next) {
     const random = Math.random().toString(36).substring(2, 8).toUpperCase();
     this.orderNumber = `ORD-${year}${month}-${random}`;
   }
-  next();
 });
 
 // Indexes for faster queries
