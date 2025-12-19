@@ -14,9 +14,18 @@ export interface CartItem {
   };
 }
 
+export interface AppliedCoupon {
+  code: string;
+  description: string;
+  discountType: 'percentage' | 'fixed';
+  discountValue: number;
+  discount: number;
+}
+
 interface CartState {
   items: CartItem[];
   isOpen: boolean;
+  coupon: AppliedCoupon | null;
   addItem: (item: Omit<CartItem, 'quantity'> & { quantity?: number }) => void;
   removeItem: (productId: string, variant?: { name: string; value: string }) => void;
   updateQuantity: (
@@ -30,6 +39,9 @@ interface CartState {
   toggleCart: () => void;
   getTotalItems: () => number;
   getTotalPrice: () => number;
+  applyCoupon: (coupon: AppliedCoupon) => void;
+  removeCoupon: () => void;
+  getDiscountedTotal: () => number;
 }
 
 export const useCartStore = create<CartState>()(
@@ -37,6 +49,7 @@ export const useCartStore = create<CartState>()(
     (set, get) => ({
       items: [],
       isOpen: false,
+      coupon: null,
 
       addItem: (item) => {
         set((state) => {
@@ -96,7 +109,7 @@ export const useCartStore = create<CartState>()(
         });
       },
 
-      clearCart: () => set({ items: [] }),
+      clearCart: () => set({ items: [], coupon: null }),
 
       openCart: () => set({ isOpen: true }),
       closeCart: () => set({ isOpen: false }),
@@ -108,6 +121,17 @@ export const useCartStore = create<CartState>()(
 
       getTotalPrice: () => {
         return get().items.reduce((total, item) => total + item.price * item.quantity, 0);
+      },
+
+      applyCoupon: (coupon) => set({ coupon }),
+
+      removeCoupon: () => set({ coupon: null }),
+
+      getDiscountedTotal: () => {
+        const subtotal = get().getTotalPrice();
+        const coupon = get().coupon;
+        if (!coupon) return subtotal;
+        return Math.max(0, subtotal - coupon.discount);
       },
     }),
     {

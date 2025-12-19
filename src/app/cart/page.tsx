@@ -16,32 +16,18 @@ import {
 import { useCartStore } from '@/store/cartStore';
 import { formatPrice } from '@/utils/format';
 import Button from '@/components/ui/Button';
-import Input from '@/components/ui/Input';
-import { useState } from 'react';
+import CouponInput from '@/components/cart/CouponInput';
 import toast from 'react-hot-toast';
 
 export default function CartPage() {
   const router = useRouter();
-  const { items, removeItem, updateQuantity, getTotalPrice, getTotalItems, clearCart } = useCartStore();
-  const [promoCode, setPromoCode] = useState('');
-  const [discount, setDiscount] = useState(0);
+  const { items, removeItem, updateQuantity, getTotalPrice, getTotalItems, clearCart, coupon, getDiscountedTotal } = useCartStore();
 
   const subtotal = getTotalPrice();
+  const discount = coupon?.discount || 0;
   const shipping = subtotal > 100 ? 0 : 10;
-  const tax = subtotal * 0.08;
+  const tax = (subtotal - discount) * 0.08;
   const total = subtotal + shipping + tax - discount;
-
-  const handleApplyPromo = () => {
-    if (promoCode.toLowerCase() === 'save10') {
-      setDiscount(subtotal * 0.1);
-      toast.success('Promo code applied! 10% off');
-    } else if (promoCode.toLowerCase() === 'save20') {
-      setDiscount(subtotal * 0.2);
-      toast.success('Promo code applied! 20% off');
-    } else {
-      toast.error('Invalid promo code');
-    }
-  };
 
   if (items.length === 0) {
     return (
@@ -201,23 +187,9 @@ export default function CartPage() {
                 Order Summary
               </h2>
 
-              {/* Promo Code */}
+              {/* Coupon Code */}
               <div className="mb-6">
-                <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Promo Code
-                </label>
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="Enter code"
-                    value={promoCode}
-                    onChange={(e) => setPromoCode(e.target.value)}
-                    leftIcon={<Tag className="h-4 w-4" />}
-                  />
-                  <Button variant="outline" onClick={handleApplyPromo}>
-                    Apply
-                  </Button>
-                </div>
-                <p className="mt-2 text-xs text-gray-500">Try: SAVE10 or SAVE20</p>
+                <CouponInput />
               </div>
 
               {/* Totals */}
@@ -244,9 +216,11 @@ export default function CartPage() {
                     {formatPrice(tax)}
                   </span>
                 </div>
-                {discount > 0 && (
+                {coupon && (
                   <div className="flex justify-between text-sm">
-                    <span className="text-green-600">Discount</span>
+                    <span className="text-green-600">
+                      Discount ({coupon.code})
+                    </span>
                     <span className="text-green-600">-{formatPrice(discount)}</span>
                   </div>
                 )}
