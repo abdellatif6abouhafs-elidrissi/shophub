@@ -78,11 +78,24 @@ const addressSchema = z.object({
   country: z.string().min(1),
 });
 
+const cartItemSchema = z.object({
+  productId: z.string(),
+  name: z.string(),
+  price: z.number(),
+  image: z.string().optional(),
+  quantity: z.number().min(1),
+  variant: z.object({
+    name: z.string(),
+    value: z.string(),
+  }).optional(),
+});
+
 const createOrderSchema = z.object({
   shippingAddress: addressSchema,
   billingAddress: addressSchema.optional(),
   paymentMethod: z.enum(['stripe', 'paypal', 'cod']),
   notes: z.string().optional(),
+  items: z.array(cartItemSchema).optional(), // Accept items from client
 });
 
 export async function POST(request: NextRequest) {
@@ -108,45 +121,77 @@ export async function POST(request: NextRequest) {
 
     await connectDB();
 
-    // Get user's cart
-    const cart = await Cart.findOne({ user: session.user.id }).populate({
-      path: 'items.product',
-      select: 'name price images stock',
-    });
+    // Use items from request body (client cart) if provided
+    let orderItems = [];
 
-    if (!cart || cart.items.length === 0) {
-      return NextResponse.json(
-        { success: false, error: 'Cart is empty' },
-        { status: 400 }
-      );
-    }
+    if (validation.data.items && validation.data.items.length > 0) {
+      // Use client-side cart items
+      for (const item of validation.data.items) {
+        // Verify product exists and has stock
+        const product = await Product.findById(item.productId);
+        if (!product) {
+          return NextResponse.json(
+            { success: false, error: `Product not found: ${item.name}` },
+            { status: 400 }
+          );
+        }
+        if (product.stock < item.quantity) {
+          return NextResponse.json(
+            { success: false, error: `Not enough stock for ${item.name}` },
+            { status: 400 }
+          );
+        }
+        orderItems.push({
+          product: item.productId,
+          name: item.name,
+          image: item.image || product.images?.[0] || '',
+          price: item.price,
+          quantity: item.quantity,
+          variant: item.variant,
+        });
+      }
+    } else {
+      // Fallback to server-side cart (MongoDB)
+      const cart = await Cart.findOne({ user: session.user.id }).populate({
+        path: 'items.product',
+        select: 'name price images stock',
+      });
 
-    // Verify stock and prepare order items
-    const orderItems = [];
-    for (const item of cart.items) {
-      const product = item.product as unknown as {
-        _id: string;
-        name: string;
-        price: number;
-        images: string[];
-        stock: number;
-      };
-
-      if (product.stock < item.quantity) {
+      if (!cart || cart.items.length === 0) {
         return NextResponse.json(
-          { success: false, error: `Not enough stock for ${product.name}` },
+          { success: false, error: 'Cart is empty' },
           { status: 400 }
         );
       }
 
-      orderItems.push({
-        product: product._id,
-        name: product.name,
-        image: product.images[0] || '',
-        price: product.price,
-        quantity: item.quantity,
-        variant: item.variant,
-      });
+      for (const item of cart.items) {
+        const product = item.product as unknown as {
+          _id: string;
+          name: string;
+          price: number;
+          images: string[];
+          stock: number;
+        };
+
+        if (product.stock < item.quantity) {
+          return NextResponse.json(
+            { success: false, error: `Not enough stock for ${product.name}` },
+            { status: 400 }
+          );
+        }
+
+        orderItems.push({
+          product: product._id,
+          name: product.name,
+          image: product.images[0] || '',
+          price: product.price,
+          quantity: item.quantity,
+          variant: item.variant,
+        });
+      }
+
+      // Clear server-side cart after order
+      await Cart.findOneAndDelete({ user: session.user.id });
     }
 
     // Calculate totals
@@ -178,9 +223,6 @@ export async function POST(request: NextRequest) {
         $inc: { stock: -item.quantity },
       });
     }
-
-    // Clear cart
-    await Cart.findOneAndDelete({ user: session.user.id });
 
     // Send order confirmation email
     try {

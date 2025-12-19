@@ -128,13 +128,21 @@ function CheckoutForm() {
         }
       }
 
-      // Create order
+      // Create order with cart items from client
       const orderRes = await fetch('/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           shippingAddress: address,
           paymentMethod,
+          items: items.map(item => ({
+            productId: item.productId,
+            name: item.name,
+            price: item.price,
+            image: item.image,
+            quantity: item.quantity,
+            variant: item.variant,
+          })),
         }),
       });
 
