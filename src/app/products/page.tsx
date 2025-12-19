@@ -44,6 +44,7 @@ function ProductsContent() {
   const [sort, setSort] = useState(searchParams.get('sort') || 'newest');
   const [search, setSearch] = useState(searchParams.get('search') || '');
   const [inStock, setInStock] = useState(searchParams.get('inStock') === 'true');
+  const [featured, setFeatured] = useState(searchParams.get('featured') === 'true');
   const [page, setPage] = useState(parseInt(searchParams.get('page') || '1'));
 
   const { data: categories } = useQuery({
@@ -59,13 +60,14 @@ function ProductsContent() {
     if (sort) params.set('sort', sort);
     if (search) params.set('search', search);
     if (inStock) params.set('inStock', 'true');
+    if (featured) params.set('featured', 'true');
     params.set('page', page.toString());
     params.set('limit', '12');
     return params;
   };
 
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ['products', category, minPrice, maxPrice, sort, search, inStock, page],
+    queryKey: ['products', category, minPrice, maxPrice, sort, search, inStock, featured, page],
     queryFn: () => fetchProducts(buildSearchParams()),
   });
 
@@ -85,8 +87,24 @@ function ProductsContent() {
     setSort('newest');
     setSearch('');
     setInStock(false);
+    setFeatured(false);
     setPage(1);
     router.push('/products');
+  };
+
+  // Check if user explicitly navigated to New Arrivals
+  const isNewArrivals = searchParams.get('sort') === 'newest' && !searchParams.get('category') && !searchParams.get('featured');
+
+  // Get page title based on active filters
+  const getPageTitle = () => {
+    if (search) return `Search results for "${search}"`;
+    if (featured) return 'Featured Products';
+    if (isNewArrivals) return 'New Arrivals';
+    if (category) {
+      const cat = categories?.find(c => c.slug === category || c._id === category);
+      return cat ? cat.name : 'Products';
+    }
+    return 'All Products';
   };
 
   useEffect(() => {
@@ -99,7 +117,7 @@ function ProductsContent() {
       <div className="border-b border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            {search ? `Search results for "${search}"` : 'All Products'}
+            {getPageTitle()}
           </h1>
           <p className="mt-2 text-gray-600 dark:text-gray-400">
             {pagination.total} products found
