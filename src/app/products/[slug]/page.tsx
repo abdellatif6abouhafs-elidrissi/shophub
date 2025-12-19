@@ -25,6 +25,7 @@ import ProductCard from '@/components/product/ProductCard';
 import RecentlyViewed from '@/components/product/RecentlyViewed';
 import ImageZoom from '@/components/product/ImageZoom';
 import BackInStockNotify from '@/components/product/BackInStockNotify';
+import ProductReviews from '@/components/reviews/ProductReviews';
 import { ProductGridSkeleton } from '@/components/ui/Skeleton';
 import { useCartStore } from '@/store/cartStore';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
@@ -453,6 +454,14 @@ export default function ProductDetailPage() {
             )}
           </motion.div>
         </div>
+
+        {/* Customer Reviews */}
+        <ProductReviews
+          productId={product._id}
+          productSlug={product.slug}
+          productRating={product.ratings?.average || 0}
+          productReviewCount={product.ratings?.count || 0}
+        />
 
         {/* Related Products */}
         {relatedProducts && relatedProducts.length > 0 && (
