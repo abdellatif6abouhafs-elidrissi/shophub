@@ -47,6 +47,18 @@ function ProductsContent() {
   const [featured, setFeatured] = useState(searchParams.get('featured') === 'true');
   const [page, setPage] = useState(parseInt(searchParams.get('page') || '1'));
 
+  // Sync state with URL when searchParams change
+  useEffect(() => {
+    setCategory(searchParams.get('category') || '');
+    setMinPrice(searchParams.get('minPrice') || '');
+    setMaxPrice(searchParams.get('maxPrice') || '');
+    setSort(searchParams.get('sort') || 'newest');
+    setSearch(searchParams.get('search') || '');
+    setInStock(searchParams.get('inStock') === 'true');
+    setFeatured(searchParams.get('featured') === 'true');
+    setPage(parseInt(searchParams.get('page') || '1'));
+  }, [searchParams]);
+
   const { data: categories } = useQuery({
     queryKey: ['categories'],
     queryFn: fetchCategories,
