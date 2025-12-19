@@ -51,6 +51,18 @@ export default function ProductDetailPage() {
 
   const { addItem } = useCartStore();
 
+  const { data: product, isLoading } = useQuery({
+    queryKey: ['product', slug],
+    queryFn: () => fetchProduct(slug),
+    enabled: !!slug,
+  });
+
+  const { data: relatedProducts } = useQuery({
+    queryKey: ['related-products', product?.category],
+    queryFn: () => fetchRelatedProducts(product?.category as string, product?._id as string),
+    enabled: !!product?.category,
+  });
+
   // Check if product is in wishlist on load
   useEffect(() => {
     if (product) {
@@ -88,18 +100,6 @@ export default function ProductDetailPage() {
     localStorage.setItem('wishlist', JSON.stringify(wishlist));
     setIsWishlisted(!isWishlisted);
   };
-
-  const { data: product, isLoading } = useQuery({
-    queryKey: ['product', slug],
-    queryFn: () => fetchProduct(slug),
-    enabled: !!slug,
-  });
-
-  const { data: relatedProducts } = useQuery({
-    queryKey: ['related-products', product?.category],
-    queryFn: () => fetchRelatedProducts(product?.category as string, product?._id as string),
-    enabled: !!product?.category,
-  });
 
   const handleAddToCart = () => {
     if (!product) return;
