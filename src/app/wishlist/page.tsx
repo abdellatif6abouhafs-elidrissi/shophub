@@ -21,6 +21,7 @@ interface WishlistItem {
   price: number;
   image: string;
   slug: string;
+  stock?: number;
 }
 
 export default function WishlistPage() {
@@ -48,6 +49,7 @@ export default function WishlistPage() {
       name: item.name,
       price: item.price,
       image: item.image,
+      stock: item.stock || 99,
       quantity: 1,
     });
     removeFromWishlist(item.id);
