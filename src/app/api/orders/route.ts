@@ -1,0 +1,194 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { connectDB } from '@/lib/db';
+import Order from '@/models/Order';
+import Cart from '@/models/Cart';
+import Product from '@/models/Product';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
+import { z } from 'zod';
+
+// GET - Fetch user's orders or all orders (admin)
+export async function GET(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions);
+
+    if (!session) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    await connectDB();
+
+    const { searchParams } = new URL(request.url);
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '10');
+    const status = searchParams.get('status');
+
+    // Build query based on role
+    const query: Record<string, unknown> =
+      session.user.role === 'admin' ? {} : { user: session.user.id };
+
+    if (status) {
+      query.orderStatus = status;
+    }
+
+    const skip = (page - 1) * limit;
+
+    const [orders, total] = await Promise.all([
+      Order.find(query)
+        .populate('user', 'name email')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      Order.countDocuments(query),
+    ]);
+
+    return NextResponse.json({
+      success: true,
+      data: orders,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    });
+  } catch (error) {
+    console.error('Get orders error:', error);
+    return NextResponse.json(
+      { success: false, error: 'Failed to fetch orders' },
+      { status: 500 }
+    );
+  }
+}
+
+// POST - Create new order
+const addressSchema = z.object({
+  fullName: z.string().min(1),
+  phone: z.string().min(1),
+  street: z.string().min(1),
+  city: z.string().min(1),
+  state: z.string().min(1),
+  zipCode: z.string().min(1),
+  country: z.string().min(1),
+});
+
+const createOrderSchema = z.object({
+  shippingAddress: addressSchema,
+  billingAddress: addressSchema.optional(),
+  paymentMethod: z.enum(['stripe', 'paypal', 'cod']),
+  notes: z.string().optional(),
+});
+
+export async function POST(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions);
+
+    if (!session) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    const body = await request.json();
+
+    const validation = createOrderSchema.safeParse(body);
+    if (!validation.success) {
+      return NextResponse.json(
+        { success: false, error: validation.error.errors[0].message },
+        { status: 400 }
+      );
+    }
+
+    await connectDB();
+
+    // Get user's cart
+    const cart = await Cart.findOne({ user: session.user.id }).populate({
+      path: 'items.product',
+      select: 'name price images stock',
+    });
+
+    if (!cart || cart.items.length === 0) {
+      return NextResponse.json(
+        { success: false, error: 'Cart is empty' },
+        { status: 400 }
+      );
+    }
+
+    // Verify stock and prepare order items
+    const orderItems = [];
+    for (const item of cart.items) {
+      const product = item.product as unknown as {
+        _id: string;
+        name: string;
+        price: number;
+        images: string[];
+        stock: number;
+      };
+
+      if (product.stock < item.quantity) {
+        return NextResponse.json(
+          { success: false, error: `Not enough stock for ${product.name}` },
+          { status: 400 }
+        );
+      }
+
+      orderItems.push({
+        product: product._id,
+        name: product.name,
+        image: product.images[0] || '',
+        price: product.price,
+        quantity: item.quantity,
+        variant: item.variant,
+      });
+    }
+
+    // Calculate totals
+    const subtotal = orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    const shippingCost = subtotal > 100 ? 0 : 10; // Free shipping over $100
+    const tax = subtotal * 0.08; // 8% tax
+    const total = subtotal + shippingCost + tax;
+
+    // Create order
+    const order = await Order.create({
+      user: session.user.id,
+      items: orderItems,
+      shippingAddress: validation.data.shippingAddress,
+      billingAddress: validation.data.billingAddress || validation.data.shippingAddress,
+      paymentMethod: validation.data.paymentMethod,
+      paymentStatus: validation.data.paymentMethod === 'cod' ? 'pending' : 'pending',
+      orderStatus: 'pending',
+      subtotal,
+      shippingCost,
+      tax,
+      discount: 0,
+      total,
+      notes: validation.data.notes,
+    });
+
+    // Update product stock
+    for (const item of orderItems) {
+      await Product.findByIdAndUpdate(item.product, {
+        $inc: { stock: -item.quantity },
+      });
+    }
+
+    // Clear cart
+    await Cart.findOneAndDelete({ user: session.user.id });
+
+    return NextResponse.json(
+      { success: true, data: order },
+      { status: 201 }
+    );
+  } catch (error) {
+    console.error('Create order error:', error);
+    return NextResponse.json(
+      { success: false, error: 'Failed to create order' },
+      { status: 500 }
+    );
+  }
+}
