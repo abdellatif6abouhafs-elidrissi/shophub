@@ -269,15 +269,9 @@ export default function AdminProductsPage() {
                     </td>
                     <td className="px-6 py-4">
                       <Badge
-                        variant={
-                          product.status === 'active'
-                            ? 'success'
-                            : product.status === 'draft'
-                            ? 'warning'
-                            : 'danger'
-                        }
+                        variant={product.isActive ? 'success' : 'danger'}
                       >
-                        {product.status || 'active'}
+                        {product.isActive ? 'Active' : 'Inactive'}
                       </Badge>
                     </td>
                     <td className="px-6 py-4">
