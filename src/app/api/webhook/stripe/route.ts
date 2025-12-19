@@ -60,8 +60,15 @@ export async function POST(request: NextRequest) {
               name: item.name,
               quantity: item.quantity,
               price: item.price,
+              image: item.image,
             })),
+            subtotal: order.subtotal,
+            shippingCost: order.shippingCost,
+            tax: order.tax,
+            discount: order.discount,
             total: order.total,
+            shippingAddress: order.shippingAddress,
+            paymentMethod: order.paymentMethod,
           });
         }
       }

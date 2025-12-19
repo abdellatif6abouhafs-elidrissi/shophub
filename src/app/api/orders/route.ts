@@ -3,9 +3,11 @@ import { connectDB } from '@/lib/db';
 import Order from '@/models/Order';
 import Cart from '@/models/Cart';
 import Product from '@/models/Product';
+import User from '@/models/User';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { z } from 'zod';
+import { sendOrderConfirmationEmail } from '@/lib/email';
 
 // GET - Fetch user's orders or all orders (admin)
 export async function GET(request: NextRequest) {
@@ -179,6 +181,36 @@ export async function POST(request: NextRequest) {
 
     // Clear cart
     await Cart.findOneAndDelete({ user: session.user.id });
+
+    // Send order confirmation email
+    try {
+      const user = await User.findById(session.user.id);
+      if (user?.email) {
+        await sendOrderConfirmationEmail(
+          user.email,
+          user.name || validation.data.shippingAddress.fullName,
+          order.orderNumber,
+          {
+            items: orderItems.map((item) => ({
+              name: item.name,
+              quantity: item.quantity,
+              price: item.price,
+              image: item.image,
+            })),
+            subtotal,
+            shippingCost,
+            tax,
+            discount: 0,
+            total,
+            shippingAddress: validation.data.shippingAddress,
+            paymentMethod: validation.data.paymentMethod,
+          }
+        );
+      }
+    } catch (emailError) {
+      // Log email error but don't fail the order
+      console.error('Failed to send order confirmation email:', emailError);
+    }
 
     return NextResponse.json(
       { success: true, data: order },
