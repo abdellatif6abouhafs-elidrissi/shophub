@@ -21,6 +21,7 @@ import {
 import { useTheme } from 'next-themes';
 import { useCartStore } from '@/store/cartStore';
 import Button from '../ui/Button';
+import SearchAutocomplete from '../search/SearchAutocomplete';
 
 export default function Header() {
   const { data: session } = useSession();
@@ -28,17 +29,9 @@ export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
 
   const totalItems = useCartStore((state) => state.getTotalItems());
   const openCart = useCartStore((state) => state.openCart);
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      window.location.href = `/products?search=${encodeURIComponent(searchQuery)}`;
-    }
-  };
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-gray-200 bg-white/80 backdrop-blur-lg dark:border-gray-800 dark:bg-gray-900/80">
@@ -80,16 +73,7 @@ export default function Header() {
           <div className="flex items-center space-x-4">
             {/* Search */}
             <div className="hidden md:block">
-              <form onSubmit={handleSearch} className="relative">
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search products..."
-                  className="w-64 rounded-lg border border-gray-300 bg-gray-50 px-4 py-2 pl-10 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
-                />
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-              </form>
+              <SearchAutocomplete />
             </div>
 
             {/* Mobile Search Toggle */}
@@ -239,18 +223,9 @@ export default function Header() {
               exit={{ height: 0, opacity: 0 }}
               className="overflow-hidden md:hidden"
             >
-              <form onSubmit={handleSearch} className="py-3">
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search products..."
-                    className="w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-2 pl-10 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
-                  />
-                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                </div>
-              </form>
+              <div className="py-3">
+                <SearchAutocomplete isMobile onClose={() => setIsSearchOpen(false)} />
+              </div>
             </motion.div>
           )}
         </AnimatePresence>

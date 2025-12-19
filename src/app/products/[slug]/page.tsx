@@ -23,6 +23,8 @@ import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
 import ProductCard from '@/components/product/ProductCard';
 import RecentlyViewed from '@/components/product/RecentlyViewed';
+import ImageZoom from '@/components/product/ImageZoom';
+import BackInStockNotify from '@/components/product/BackInStockNotify';
 import { ProductGridSkeleton } from '@/components/ui/Skeleton';
 import { useCartStore } from '@/store/cartStore';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
@@ -227,17 +229,15 @@ export default function ProductDetailPage() {
             animate={{ opacity: 1, x: 0 }}
             className="space-y-4"
           >
-            {/* Main Image */}
+            {/* Main Image with Zoom */}
             <div className="relative aspect-square overflow-hidden rounded-2xl bg-white dark:bg-gray-900">
-              <Image
+              <ImageZoom
                 src={product.images[selectedImage] || '/placeholder.jpg'}
                 alt={product.name}
-                fill
-                className="object-cover"
-                priority
+                className="h-full w-full"
               />
               {discount > 0 && (
-                <Badge className="absolute left-4 top-4" variant="danger">
+                <Badge className="absolute left-4 top-4 z-10" variant="danger">
                   -{discount}%
                 </Badge>
               )}
@@ -361,42 +361,66 @@ export default function ProductDetailPage() {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex gap-4">
-              <Button
-                size="lg"
-                className="flex-1"
-                onClick={handleAddToCart}
-                disabled={product.stock === 0}
-              >
-                <ShoppingCart className="mr-2 h-5 w-5" />
-                Add to Cart
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                onClick={toggleWishlist}
-              >
-                <Heart
-                  className={`h-5 w-5 ${
-                    isWishlisted ? 'fill-red-500 text-red-500' : ''
-                  }`}
-                />
-              </Button>
-              <Button size="lg" variant="outline">
-                <Share2 className="h-5 w-5" />
-              </Button>
-            </div>
+            {product.stock > 0 ? (
+              <>
+                <div className="flex gap-4">
+                  <Button
+                    size="lg"
+                    className="flex-1"
+                    onClick={handleAddToCart}
+                  >
+                    <ShoppingCart className="mr-2 h-5 w-5" />
+                    Add to Cart
+                  </Button>
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    onClick={toggleWishlist}
+                  >
+                    <Heart
+                      className={`h-5 w-5 ${
+                        isWishlisted ? 'fill-red-500 text-red-500' : ''
+                      }`}
+                    />
+                  </Button>
+                  <Button size="lg" variant="outline">
+                    <Share2 className="h-5 w-5" />
+                  </Button>
+                </div>
 
-            {/* Buy Now */}
-            <Button
-              size="lg"
-              variant="secondary"
-              className="w-full bg-green-600 hover:bg-green-700 text-white"
-              onClick={handleBuyNow}
-              disabled={product.stock === 0}
-            >
-              Buy Now
-            </Button>
+                {/* Buy Now */}
+                <Button
+                  size="lg"
+                  variant="secondary"
+                  className="w-full bg-green-600 hover:bg-green-700 text-white"
+                  onClick={handleBuyNow}
+                >
+                  Buy Now
+                </Button>
+              </>
+            ) : (
+              <div className="space-y-4">
+                <BackInStockNotify productId={product._id} productName={product.name} />
+                <div className="flex gap-4">
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="flex-1"
+                    onClick={toggleWishlist}
+                  >
+                    <Heart
+                      className={`mr-2 h-5 w-5 ${
+                        isWishlisted ? 'fill-red-500 text-red-500' : ''
+                      }`}
+                    />
+                    {isWishlisted ? 'In Wishlist' : 'Add to Wishlist'}
+                  </Button>
+                  <Button size="lg" variant="outline">
+                    <Share2 className="h-5 w-5" />
+                  </Button>
+                </div>
+              </div>
+            )}
 
             {/* Features */}
             <div className="grid grid-cols-3 gap-4 border-t border-gray-200 pt-6 dark:border-gray-700">

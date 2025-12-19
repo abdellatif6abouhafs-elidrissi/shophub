@@ -4,9 +4,10 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { Heart, ShoppingCart, Star, Eye } from 'lucide-react';
+import { Heart, ShoppingCart, Star, Eye, GitCompare } from 'lucide-react';
 import { useCartStore } from '@/store/cartStore';
 import { useQuickView } from '@/context/QuickViewContext';
+import { useCompare } from '@/context/CompareContext';
 import { formatPrice, getDiscountPercentage } from '@/utils/format';
 import { IProduct } from '@/types';
 import toast from 'react-hot-toast';
@@ -20,11 +21,18 @@ export default function ProductCard({ product }: ProductCardProps) {
   const [isWishlisted, setIsWishlisted] = useState(false);
   const addItem = useCartStore((state) => state.addItem);
   const { openQuickView } = useQuickView();
+  const { addToCompare, isInCompare } = useCompare();
 
   const handleQuickView = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     openQuickView(product);
+  };
+
+  const handleCompare = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    addToCompare(product);
   };
 
   const discount = product.comparePrice
@@ -125,6 +133,17 @@ export default function ProductCard({ product }: ProductCardProps) {
               title="Quick View"
             >
               <Eye className="h-4 w-4" />
+            </button>
+            <button
+              onClick={handleCompare}
+              className={`rounded-full bg-white p-2 shadow-md transition-colors dark:bg-gray-800 ${
+                isInCompare(product._id)
+                  ? 'text-blue-600'
+                  : 'text-gray-600 hover:text-blue-500'
+              }`}
+              title="Compare"
+            >
+              <GitCompare className="h-4 w-4" />
             </button>
           </motion.div>
 

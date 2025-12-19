@@ -6,6 +6,8 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import CartDrawer from '@/components/cart/CartDrawer';
 import NewsletterPopup from '@/components/newsletter/NewsletterPopup';
+import CompareDrawer from '@/components/product/CompareDrawer';
+import CompareFloatingButton from '@/components/product/CompareFloatingButton';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -58,6 +60,8 @@ export default function RootLayout({
             <Footer />
             <CartDrawer />
             <NewsletterPopup />
+            <CompareDrawer />
+            <CompareFloatingButton />
           </div>
         </Providers>
       </body>

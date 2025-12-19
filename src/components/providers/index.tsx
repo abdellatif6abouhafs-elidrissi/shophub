@@ -6,6 +6,7 @@ import { useState } from 'react';
 import SessionProvider from './SessionProvider';
 import ThemeProvider from './ThemeProvider';
 import { QuickViewProvider } from '@/context/QuickViewContext';
+import { CompareProvider } from '@/context/CompareContext';
 
 interface Props {
   children: React.ReactNode;
@@ -29,17 +30,19 @@ export default function Providers({ children }: Props) {
       <QueryClientProvider client={queryClient}>
         <ThemeProvider>
           <QuickViewProvider>
-            {children}
-            <Toaster
-              position="top-right"
-              toastOptions={{
-                duration: 3000,
-                style: {
-                  background: 'var(--toast-bg)',
-                  color: 'var(--toast-text)',
-                },
-              }}
-            />
+            <CompareProvider>
+              {children}
+              <Toaster
+                position="top-right"
+                toastOptions={{
+                  duration: 3000,
+                  style: {
+                    background: 'var(--toast-bg)',
+                    color: 'var(--toast-text)',
+                  },
+                }}
+              />
+            </CompareProvider>
           </QuickViewProvider>
         </ThemeProvider>
       </QueryClientProvider>
