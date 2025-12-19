@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { Heart, ShoppingCart, Star, Eye } from 'lucide-react';
 import { useCartStore } from '@/store/cartStore';
+import { useQuickView } from '@/context/QuickViewContext';
 import { formatPrice, getDiscountPercentage } from '@/utils/format';
 import { IProduct } from '@/types';
 import toast from 'react-hot-toast';
@@ -18,6 +19,13 @@ export default function ProductCard({ product }: ProductCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const addItem = useCartStore((state) => state.addItem);
+  const { openQuickView } = useQuickView();
+
+  const handleQuickView = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    openQuickView(product);
+  };
 
   const discount = product.comparePrice
     ? getDiscountPercentage(product.price, product.comparePrice)
@@ -111,12 +119,13 @@ export default function ProductCard({ product }: ProductCardProps) {
             >
               <Heart className={`h-4 w-4 ${isWishlisted ? 'fill-current' : ''}`} />
             </button>
-            <Link
-              href={`/products/${product.slug}`}
+            <button
+              onClick={handleQuickView}
               className="rounded-full bg-white p-2 text-gray-600 shadow-md transition-colors hover:text-blue-500 dark:bg-gray-800"
+              title="Quick View"
             >
               <Eye className="h-4 w-4" />
-            </Link>
+            </button>
           </motion.div>
 
           {/* Add to Cart Button */}

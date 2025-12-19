@@ -5,6 +5,7 @@ import { Toaster } from 'react-hot-toast';
 import { useState } from 'react';
 import SessionProvider from './SessionProvider';
 import ThemeProvider from './ThemeProvider';
+import { QuickViewProvider } from '@/context/QuickViewContext';
 
 interface Props {
   children: React.ReactNode;
@@ -27,17 +28,19 @@ export default function Providers({ children }: Props) {
     <SessionProvider>
       <QueryClientProvider client={queryClient}>
         <ThemeProvider>
-          {children}
-          <Toaster
-            position="top-right"
-            toastOptions={{
-              duration: 3000,
-              style: {
-                background: 'var(--toast-bg)',
-                color: 'var(--toast-text)',
-              },
-            }}
-          />
+          <QuickViewProvider>
+            {children}
+            <Toaster
+              position="top-right"
+              toastOptions={{
+                duration: 3000,
+                style: {
+                  background: 'var(--toast-bg)',
+                  color: 'var(--toast-text)',
+                },
+              }}
+            />
+          </QuickViewProvider>
         </ThemeProvider>
       </QueryClientProvider>
     </SessionProvider>

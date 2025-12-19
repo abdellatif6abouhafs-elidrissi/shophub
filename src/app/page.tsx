@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { ArrowRight, Truck, Shield, RefreshCw, Headphones } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import ProductCard from '@/components/product/ProductCard';
+import RecentlyViewed from '@/components/product/RecentlyViewed';
 import { ProductGridSkeleton } from '@/components/ui/Skeleton';
 import { useQuery } from '@tanstack/react-query';
 import { IProduct } from '@/types';
@@ -253,6 +254,9 @@ export default function HomePage() {
           )}
         </div>
       </section>
+
+      {/* Recently Viewed Section */}
+      <RecentlyViewed />
 
       {/* Newsletter Section */}
       <section className="bg-blue-600 py-16">

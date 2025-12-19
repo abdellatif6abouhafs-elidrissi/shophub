@@ -22,8 +22,10 @@ import {
 import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
 import ProductCard from '@/components/product/ProductCard';
+import RecentlyViewed from '@/components/product/RecentlyViewed';
 import { ProductGridSkeleton } from '@/components/ui/Skeleton';
 import { useCartStore } from '@/store/cartStore';
+import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import { formatPrice } from '@/utils/format';
 import { IProduct } from '@/types';
 import toast from 'react-hot-toast';
@@ -50,6 +52,7 @@ export default function ProductDetailPage() {
   const [isWishlisted, setIsWishlisted] = useState(false);
 
   const { addItem } = useCartStore();
+  const { addProduct: addToRecentlyViewed } = useRecentlyViewed();
 
   const { data: product, isLoading } = useQuery({
     queryKey: ['product', slug],
@@ -62,6 +65,19 @@ export default function ProductDetailPage() {
     queryFn: () => fetchRelatedProducts(product?.category as string, product?._id as string),
     enabled: !!product?.category,
   });
+
+  // Track recently viewed product
+  useEffect(() => {
+    if (product) {
+      addToRecentlyViewed({
+        id: product._id,
+        name: product.name,
+        price: product.price,
+        image: product.images[0] || '',
+        slug: product.slug,
+      });
+    }
+  }, [product, addToRecentlyViewed]);
 
   // Check if product is in wishlist on load (client-side only)
   useEffect(() => {
@@ -427,6 +443,9 @@ export default function ProductDetailPage() {
             </div>
           </section>
         )}
+
+        {/* Recently Viewed Products */}
+        <RecentlyViewed />
       </div>
     </div>
   );

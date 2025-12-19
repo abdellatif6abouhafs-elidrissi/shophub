@@ -5,6 +5,7 @@ import Providers from '@/components/providers';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import CartDrawer from '@/components/cart/CartDrawer';
+import NewsletterPopup from '@/components/newsletter/NewsletterPopup';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -56,6 +57,7 @@ export default function RootLayout({
             <main className="flex-1">{children}</main>
             <Footer />
             <CartDrawer />
+            <NewsletterPopup />
           </div>
         </Providers>
       </body>
