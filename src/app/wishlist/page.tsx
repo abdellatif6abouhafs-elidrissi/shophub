@@ -31,20 +31,32 @@ export default function WishlistPage() {
 
   useEffect(() => {
     // Load wishlist from localStorage (client-side only)
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('wishlist');
-      console.log('Wishlist from localStorage:', saved);
-      if (saved) {
-        try {
+    const loadWishlist = () => {
+      try {
+        const saved = localStorage.getItem('wishlist');
+        if (saved) {
           const parsed = JSON.parse(saved);
-          console.log('Parsed wishlist:', parsed);
-          setWishlistItems(parsed);
-        } catch (e) {
-          console.error('Error parsing wishlist:', e);
+          if (Array.isArray(parsed)) {
+            setWishlistItems(parsed);
+          }
         }
+      } catch (e) {
+        console.error('Error loading wishlist:', e);
       }
       setIsLoaded(true);
-    }
+    };
+
+    loadWishlist();
+
+    // Listen for storage changes (in case wishlist is updated in another tab)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'wishlist') {
+        loadWishlist();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
   const removeFromWishlist = (id: string) => {
