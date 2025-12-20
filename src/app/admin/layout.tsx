@@ -14,7 +14,7 @@ import {
   LogOut,
   Tag,
   Bell,
-  Shield,
+  RefreshCcw,
 } from 'lucide-react';
 import { signOut } from 'next-auth/react';
 import NotificationBell from '@/components/notifications/NotificationBell';
@@ -24,6 +24,7 @@ const sidebarLinks = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/admin/products', label: 'Products', icon: Package },
   { href: '/admin/orders', label: 'Orders', icon: ShoppingCart },
+  { href: '/admin/refunds', label: 'Refunds', icon: RefreshCcw },
   { href: '/admin/users', label: 'Users', icon: Users },
   { href: '/admin/categories', label: 'Categories', icon: FolderTree },
   { href: '/admin/coupons', label: 'Coupons', icon: Tag },

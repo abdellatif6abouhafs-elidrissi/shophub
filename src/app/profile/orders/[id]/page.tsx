@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter, useParams } from 'next/navigation';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -19,14 +19,16 @@ import {
   CreditCard,
   ArrowLeft,
   Copy,
-  ExternalLink,
+  RefreshCcw,
 } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
+import RefundRequestModal from '@/components/RefundRequestModal';
 import { formatPrice, formatDate } from '@/utils/format';
 import toast from 'react-hot-toast';
 
 interface OrderItem {
+  product?: string;
   name: string;
   image: string;
   price: number;
@@ -89,12 +91,22 @@ export default function OrderDetailsPage() {
   const router = useRouter();
   const params = useParams();
   const orderId = params.id as string;
+  const queryClient = useQueryClient();
+  const [isRefundModalOpen, setIsRefundModalOpen] = useState(false);
 
   const { data: order, isLoading, error } = useQuery({
     queryKey: ['order', orderId],
     queryFn: () => fetchOrder(orderId),
     enabled: status === 'authenticated' && !!orderId,
   });
+
+  const handleRefundSuccess = () => {
+    queryClient.invalidateQueries({ queryKey: ['order', orderId] });
+  };
+
+  const canRequestRefund = order &&
+    ['delivered', 'shipped'].includes(order.orderStatus) &&
+    order.paymentStatus !== 'refunded';
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -425,25 +437,49 @@ export default function OrderDetailsPage() {
             )}
 
             {/* Actions */}
-            <div className="flex gap-3">
-              <Link href="/contact" className="flex-1">
-                <Button variant="outline" className="w-full">
-                  Need Help?
-                </Button>
-              </Link>
-              {['pending', 'confirmed'].includes(order.orderStatus) && (
+            <div className="space-y-3">
+              {canRequestRefund && (
                 <Button
+                  onClick={() => setIsRefundModalOpen(true)}
+                  className="w-full"
                   variant="outline"
-                  className="flex-1 border-red-300 text-red-600 hover:bg-red-50 dark:border-red-800 dark:text-red-400"
-                  onClick={() => toast.error('Cancel functionality coming soon')}
                 >
-                  Cancel Order
+                  <RefreshCcw className="mr-2 h-4 w-4" />
+                  Request Refund/Return
                 </Button>
               )}
+              <div className="flex gap-3">
+                <Link href="/contact" className="flex-1">
+                  <Button variant="outline" className="w-full">
+                    Need Help?
+                  </Button>
+                </Link>
+                {['pending', 'confirmed'].includes(order.orderStatus) && (
+                  <Button
+                    variant="outline"
+                    className="flex-1 border-red-300 text-red-600 hover:bg-red-50 dark:border-red-800 dark:text-red-400"
+                    onClick={() => toast.error('Cancel functionality coming soon')}
+                  >
+                    Cancel Order
+                  </Button>
+                )}
+              </div>
             </div>
           </motion.div>
         </div>
       </div>
+
+      {/* Refund Request Modal */}
+      {order && (
+        <RefundRequestModal
+          isOpen={isRefundModalOpen}
+          onClose={() => setIsRefundModalOpen(false)}
+          orderId={order._id}
+          orderNumber={order.orderNumber}
+          items={order.items}
+          onSuccess={handleRefundSuccess}
+        />
+      )}
     </div>
   );
 }

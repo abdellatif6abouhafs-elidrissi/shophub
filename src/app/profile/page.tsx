@@ -16,6 +16,7 @@ import {
   Edit2,
   Save,
   X,
+  RefreshCcw,
 } from 'lucide-react';
 import Link from 'next/link';
 import { signOut } from 'next-auth/react';
@@ -25,6 +26,7 @@ import toast from 'react-hot-toast';
 
 const menuItems = [
   { icon: Package, label: 'My Orders', href: '/profile/orders' },
+  { icon: RefreshCcw, label: 'Refund Requests', href: '/profile/refunds' },
   { icon: Heart, label: 'Wishlist', href: '/wishlist' },
   { icon: MapPin, label: 'Addresses', href: '/profile/addresses' },
   { icon: Settings, label: 'Settings', href: '/profile/settings' },
