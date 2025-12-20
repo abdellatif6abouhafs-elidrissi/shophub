@@ -5,18 +5,15 @@ import { useRouter, useParams } from 'next/navigation';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import Image from 'next/image';
 import {
   ArrowLeft,
   Save,
-  Plus,
-  X,
-  Upload,
   Loader2,
   Trash2,
 } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
+import ImageUpload from '@/components/admin/ImageUpload';
 import toast from 'react-hot-toast';
 
 interface Category {
@@ -91,7 +88,6 @@ export default function EditProductPage() {
     isFeatured: false,
   });
 
-  const [newImageUrl, setNewImageUrl] = useState('');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const { data: productData, isLoading: productLoading, error: productError } = useQuery({
@@ -170,23 +166,6 @@ export default function EditProductPage() {
     };
 
     updateMutation.mutate(productData);
-  };
-
-  const addImage = () => {
-    if (newImageUrl && !formData.images.includes(newImageUrl)) {
-      setFormData({
-        ...formData,
-        images: [...formData.images, newImageUrl],
-      });
-      setNewImageUrl('');
-    }
-  };
-
-  const removeImage = (index: number) => {
-    setFormData({
-      ...formData,
-      images: formData.images.filter((_, i) => i !== index),
-    });
   };
 
   const categories = categoriesData?.data || [];
@@ -367,51 +346,11 @@ export default function EditProductPage() {
                 Product Images
               </h2>
 
-              <div className="mb-4 flex gap-2">
-                <Input
-                  value={newImageUrl}
-                  onChange={(e) => setNewImageUrl(e.target.value)}
-                  placeholder="Enter image URL"
-                  className="flex-1"
-                />
-                <Button type="button" onClick={addImage} variant="outline">
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </div>
-
-              {formData.images.length > 0 ? (
-                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-                  {formData.images.map((image, index) => (
-                    <div key={index} className="group relative aspect-square">
-                      <Image
-                        src={image}
-                        alt={`Product ${index + 1}`}
-                        fill
-                        className="rounded-lg object-cover"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => removeImage(index)}
-                        className="absolute -right-2 -top-2 rounded-full bg-red-500 p-1 text-white opacity-0 transition-opacity group-hover:opacity-100"
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
-                      {index === 0 && (
-                        <span className="absolute bottom-2 left-2 rounded bg-blue-600 px-2 py-0.5 text-xs text-white">
-                          Main
-                        </span>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="rounded-lg border-2 border-dashed border-gray-300 p-8 text-center dark:border-gray-700">
-                  <Upload className="mx-auto mb-2 h-8 w-8 text-gray-400" />
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Add image URLs to display product photos
-                  </p>
-                </div>
-              )}
+              <ImageUpload
+                images={formData.images}
+                onChange={(images) => setFormData({ ...formData, images })}
+                maxImages={5}
+              />
             </motion.div>
           </div>
 
