@@ -1,5 +1,6 @@
 import { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
+import GoogleProvider from 'next-auth/providers/google';
 import { connectDB } from './db';
 import User from '@/models/User';
 
@@ -33,6 +34,12 @@ declare module 'next-auth/jwt' {
 
 export const authOptions: NextAuthOptions = {
   providers: [
+    // Google OAuth Provider
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID || '',
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
+    }),
+    // Credentials Provider
     CredentialsProvider({
       name: 'Credentials',
       credentials: {
@@ -50,6 +57,11 @@ export const authOptions: NextAuthOptions = {
 
         if (!user) {
           throw new Error('Invalid email or password');
+        }
+
+        // Check if user signed up with OAuth
+        if (user.provider === 'google') {
+          throw new Error('Please sign in with Google');
         }
 
         const isPasswordValid = await user.comparePassword(credentials.password);
@@ -74,10 +86,50 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async signIn({ user, account }) {
+      if (account?.provider === 'google') {
+        await connectDB();
+
+        // Check if user exists
+        let dbUser = await User.findOne({ email: user.email });
+
+        if (!dbUser) {
+          // Create new user for Google sign in
+          dbUser = await User.create({
+            name: user.name,
+            email: user.email,
+            image: user.image,
+            provider: 'google',
+            providerId: account.providerAccountId,
+            isVerified: true, // Google users are automatically verified
+            role: 'user',
+          });
+        } else if (dbUser.provider === 'credentials') {
+          // User exists with credentials, link Google account
+          dbUser.provider = 'google';
+          dbUser.providerId = account.providerAccountId;
+          if (!dbUser.image && user.image) {
+            dbUser.image = user.image;
+          }
+          await dbUser.save();
+        }
+      }
+      return true;
+    },
+    async jwt({ token, user, account }) {
       if (user) {
-        token.id = user.id;
-        token.role = user.role;
+        // For OAuth, we need to fetch the user from DB to get the role
+        if (account?.provider === 'google') {
+          await connectDB();
+          const dbUser = await User.findOne({ email: user.email });
+          if (dbUser) {
+            token.id = dbUser._id.toString();
+            token.role = dbUser.role;
+          }
+        } else {
+          token.id = user.id;
+          token.role = user.role;
+        }
       }
       return token;
     },

@@ -16,7 +16,7 @@ export interface IUserDocument extends Document {
   _id: mongoose.Types.ObjectId;
   name: string;
   email: string;
-  password: string;
+  password?: string; // Optional for OAuth users
   image?: string;
   role: 'user' | 'admin';
   isVerified: boolean;
@@ -25,6 +25,9 @@ export interface IUserDocument extends Document {
   addresses: IAddress[];
   resetPasswordToken?: string;
   resetPasswordExpires?: Date;
+  // OAuth fields
+  provider: 'credentials' | 'google';
+  providerId?: string;
   createdAt: Date;
   updatedAt: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
@@ -59,7 +62,7 @@ const userSchema = new Schema<IUserDocument>(
     },
     password: {
       type: String,
-      required: [true, 'Please provide a password'],
+      required: false, // Optional for OAuth users
       minlength: [6, 'Password must be at least 6 characters'],
       select: false,
     },
@@ -81,6 +84,16 @@ const userSchema = new Schema<IUserDocument>(
     addresses: [addressSchema],
     resetPasswordToken: String,
     resetPasswordExpires: Date,
+    // OAuth fields
+    provider: {
+      type: String,
+      enum: ['credentials', 'google'],
+      default: 'credentials',
+    },
+    providerId: {
+      type: String,
+      required: false,
+    },
   },
   {
     timestamps: true,
@@ -89,7 +102,8 @@ const userSchema = new Schema<IUserDocument>(
 
 // Hash password before saving
 userSchema.pre('save', async function () {
-  if (!this.isModified('password')) {
+  // Skip if password is not set (OAuth users) or not modified
+  if (!this.password || !this.isModified('password')) {
     return;
   }
 
@@ -99,6 +113,9 @@ userSchema.pre('save', async function () {
 
 // Compare password method
 userSchema.methods.comparePassword = async function (candidatePassword: string): Promise<boolean> {
+  if (!this.password) {
+    return false; // OAuth users don't have passwords
+  }
   return bcrypt.compare(candidatePassword, this.password);
 };
 
