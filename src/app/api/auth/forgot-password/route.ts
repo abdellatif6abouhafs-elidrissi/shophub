@@ -3,6 +3,7 @@ import { connectDB } from '@/lib/db';
 import User from '@/models/User';
 import crypto from 'crypto';
 import { sendPasswordResetEmail } from '@/lib/email';
+import { withRateLimit, rateLimitConfigs } from '@/lib/rateLimit';
 import { z } from 'zod';
 
 const forgotPasswordSchema = z.object({
@@ -11,6 +12,12 @@ const forgotPasswordSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
+    // Apply rate limiting
+    const rateLimitResponse = withRateLimit(request, 'forgot-password', rateLimitConfigs.forgotPassword);
+    if (rateLimitResponse) {
+      return rateLimitResponse;
+    }
+
     const body = await request.json();
 
     const validation = forgotPasswordSchema.safeParse(body);

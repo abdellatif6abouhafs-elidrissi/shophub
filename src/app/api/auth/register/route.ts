@@ -3,6 +3,7 @@ import { connectDB } from '@/lib/db';
 import User from '@/models/User';
 import { notifyNewUser } from '@/lib/notifications';
 import { sendVerificationEmail } from '@/lib/email';
+import { withRateLimit, rateLimitConfigs } from '@/lib/rateLimit';
 import { z } from 'zod';
 import crypto from 'crypto';
 
@@ -14,6 +15,12 @@ const registerSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
+    // Apply rate limiting
+    const rateLimitResponse = withRateLimit(request, 'register', rateLimitConfigs.register);
+    if (rateLimitResponse) {
+      return rateLimitResponse;
+    }
+
     const body = await request.json();
 
     // Validate input
