@@ -8,7 +8,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { z } from 'zod';
 import { sendOrderConfirmationEmail } from '@/lib/email';
-import { notifyOrderPlaced } from '@/lib/notifications';
+import { notifyOrderPlaced, notifyLowStock } from '@/lib/notifications';
 
 // GET - Fetch user's orders or all orders (admin)
 export async function GET(request: NextRequest) {
@@ -218,11 +218,27 @@ export async function POST(request: NextRequest) {
       notes: validation.data.notes,
     });
 
-    // Update product stock
+    // Update product stock and check for low stock
+    const LOW_STOCK_THRESHOLD = 10;
     for (const item of orderItems) {
-      await Product.findByIdAndUpdate(item.product, {
-        $inc: { stock: -item.quantity },
-      });
+      const updatedProduct = await Product.findByIdAndUpdate(
+        item.product,
+        { $inc: { stock: -item.quantity } },
+        { new: true }
+      );
+
+      // Notify admin if stock is low
+      if (updatedProduct && updatedProduct.stock <= LOW_STOCK_THRESHOLD && updatedProduct.stock > 0) {
+        try {
+          await notifyLowStock(
+            updatedProduct._id.toString(),
+            updatedProduct.name,
+            updatedProduct.stock
+          );
+        } catch (notifyError) {
+          console.error('Failed to send low stock notification:', notifyError);
+        }
+      }
     }
 
     // Send order confirmation email
@@ -257,7 +273,7 @@ export async function POST(request: NextRequest) {
 
     // Send notification to admin about new order
     try {
-      await notifyOrderPlaced(session.user.id, order._id.toString(), order.orderNumber, total);
+      await notifyOrderPlaced(order._id.toString(), order.orderNumber, session.user.id, total);
     } catch (notifyError) {
       console.error('Failed to send order notification:', notifyError);
     }

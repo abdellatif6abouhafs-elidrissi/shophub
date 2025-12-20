@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth';
 import connectDB from '@/lib/db';
 import Review from '@/models/Review';
 import Product from '@/models/Product';
+import { notifyNewReview } from '@/lib/notifications';
 import mongoose from 'mongoose';
 
 // GET reviews for a product
@@ -160,6 +161,19 @@ export async function POST(request: NextRequest) {
 
     // Populate user data
     await review.populate('user', 'name image');
+
+    // Notify admin about new review
+    try {
+      await notifyNewReview(
+        productId,
+        product.name,
+        session.user.id,
+        session.user.name || 'Customer',
+        rating
+      );
+    } catch (notifyError) {
+      console.error('Failed to send review notification:', notifyError);
+    }
 
     return NextResponse.json(
       { success: true, data: review },

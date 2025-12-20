@@ -130,9 +130,9 @@ export async function PUT(
       // Send in-app notification to user
       try {
         await notifyOrderStatusChange(
-          user._id.toString(),
           order._id.toString(),
           order.orderNumber,
+          user._id.toString(),
           validation.data.orderStatus
         );
       } catch (notifyError) {
@@ -213,9 +213,9 @@ export async function DELETE(
       // Send in-app notification
       try {
         await notifyOrderStatusChange(
-          user._id.toString(),
           order._id.toString(),
           order.orderNumber,
+          user._id.toString(),
           'cancelled'
         );
       } catch (notifyError) {

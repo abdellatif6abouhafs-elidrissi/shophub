@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from '@/lib/db';
 import User from '@/models/User';
+import { notifyNewUser } from '@/lib/notifications';
 import { z } from 'zod';
 
 const registerSchema = z.object({
@@ -41,6 +42,13 @@ export async function POST(request: NextRequest) {
       email,
       password,
     });
+
+    // Notify admin about new user registration
+    try {
+      await notifyNewUser(user._id.toString(), user.name, user.email);
+    } catch (notifyError) {
+      console.error('Failed to send new user notification:', notifyError);
+    }
 
     return NextResponse.json(
       {

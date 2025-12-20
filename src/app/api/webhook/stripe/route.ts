@@ -4,6 +4,7 @@ import { connectDB } from '@/lib/db';
 import Order from '@/models/Order';
 import User from '@/models/User';
 import { sendOrderConfirmationEmail } from '@/lib/email';
+import { notifyPaymentReceived, notifyOrderStatusChange } from '@/lib/notifications';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-11-17.clover',
@@ -70,6 +71,24 @@ export async function POST(request: NextRequest) {
             shippingAddress: order.shippingAddress,
             paymentMethod: order.paymentMethod,
           });
+
+          // Send payment notification
+          try {
+            await notifyPaymentReceived(
+              order._id.toString(),
+              order.orderNumber,
+              user._id.toString(),
+              order.total
+            );
+            await notifyOrderStatusChange(
+              order._id.toString(),
+              order.orderNumber,
+              user._id.toString(),
+              'confirmed'
+            );
+          } catch (notifyError) {
+            console.error('Failed to send payment notification:', notifyError);
+          }
         }
       }
       break;
