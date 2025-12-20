@@ -882,3 +882,246 @@ export async function sendBackInStockEmail(
     html,
   });
 }
+
+// Abandoned Cart Reminder Email
+interface AbandonedCartItem {
+  productName: string;
+  productImage?: string;
+  price: number;
+  quantity: number;
+}
+
+interface AbandonedCartEmailOptions {
+  to: string;
+  items: AbandonedCartItem[];
+  totalAmount: number;
+  reminderNumber: number;
+  discountCode?: string;
+  discountPercent?: number;
+}
+
+export async function sendAbandonedCartEmail({
+  to,
+  items,
+  totalAmount,
+  reminderNumber,
+  discountCode,
+  discountPercent,
+}: AbandonedCartEmailOptions) {
+  const itemsHtml = items
+    .map(
+      (item) => `
+      <tr>
+        <td style="padding: 15px; border-bottom: 1px solid #e5e7eb;">
+          <div style="display: flex; align-items: center;">
+            ${item.productImage ? `<img src="${item.productImage}" alt="${item.productName}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; margin-right: 15px;">` : ''}
+            <div>
+              <p style="margin: 0; font-weight: 500;">${item.productName}</p>
+              <p style="margin: 5px 0 0; color: #666; font-size: 14px;">Qty: ${item.quantity}</p>
+            </div>
+          </div>
+        </td>
+        <td style="padding: 15px; border-bottom: 1px solid #e5e7eb; text-align: right; font-weight: 500;">$${(item.price * item.quantity).toFixed(2)}</td>
+      </tr>
+    `
+    )
+    .join('');
+
+  const subjects = {
+    1: 'Nssiti chi haja f cart dyalk! 🛒',
+    2: '10% OFF - Cart dyalk kattsnak! 🎁',
+    3: 'Akhir chance! 15% OFF - Cart dyalk ghadi ytsala! ⏰',
+  };
+
+  const messages = {
+    1: 'Nssiti chi hajat f cart dyalk. Rj3 w kmmel l\'achat dyalk!',
+    2: 'Cart dyalk mazal kattsnak! Hak <strong>10% OFF</strong> bach tkemmel l\'achat dyalk.',
+    3: 'Hadi akhir chance! Cart dyalk ghadi ytsala. Hak <strong>15% OFF</strong> exclusif!',
+  };
+
+  const subject = subjects[reminderNumber as keyof typeof subjects] || subjects[1];
+  const message = messages[reminderNumber as keyof typeof messages] || messages[1];
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+          body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f5f5f5; }
+          .wrapper { background-color: #f5f5f5; padding: 40px 20px; }
+          .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
+          .header { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); padding: 30px; text-align: center; }
+          .header h1 { color: white; margin: 0; font-size: 24px; }
+          .icon { width: 60px; height: 60px; background: white; border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; }
+          .content { padding: 30px; }
+          table { width: 100%; border-collapse: collapse; }
+          .discount-box { background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 12px; padding: 20px; text-align: center; margin: 20px 0; }
+          .discount-code { font-size: 28px; font-weight: bold; color: white; letter-spacing: 3px; background: rgba(255,255,255,0.2); padding: 10px 20px; border-radius: 8px; display: inline-block; margin-top: 10px; }
+          .total-box { background: #f9fafb; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: center; }
+          .footer { background-color: #f9fafb; padding: 20px 30px; text-align: center; font-size: 12px; color: #666; border-top: 1px solid #e5e7eb; }
+          .button { display: inline-block; padding: 16px 40px; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white !important; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px; }
+          .urgency { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; margin: 20px 0; }
+        </style>
+      </head>
+      <body>
+        <div class="wrapper">
+          <div class="container">
+            <div class="header">
+              <div class="icon">
+                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2">
+                  <circle cx="9" cy="21" r="1"></circle>
+                  <circle cx="20" cy="21" r="1"></circle>
+                  <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                </svg>
+              </div>
+              <h1>Cart Dyalk Kattsnak! 🛒</h1>
+            </div>
+            <div class="content">
+              <p>${message}</p>
+
+              ${discountCode ? `
+              <div class="discount-box">
+                <p style="margin: 0; color: white; font-size: 14px;">Code Exclusif Dyalk:</p>
+                <div class="discount-code">${discountCode}</div>
+                <p style="margin: 10px 0 0; color: rgba(255,255,255,0.9); font-size: 14px;">${discountPercent}% OFF !</p>
+              </div>
+              ` : ''}
+
+              <h3 style="margin-bottom: 15px; color: #333;">Hajat f Cart:</h3>
+              <table>
+                <tbody>
+                  ${itemsHtml}
+                </tbody>
+              </table>
+
+              <div class="total-box">
+                <p style="margin: 0 0 5px; color: #666; font-size: 14px;">Total</p>
+                <p style="margin: 0; font-size: 28px; font-weight: bold; color: #333;">$${totalAmount.toFixed(2)}</p>
+                ${discountPercent ? `<p style="margin: 5px 0 0; color: #10b981; font-size: 14px;">Ghadi trb7 $${(totalAmount * discountPercent / 100).toFixed(2)} m3a code dyalk!</p>` : ''}
+              </div>
+
+              ${reminderNumber >= 3 ? `
+              <div class="urgency">
+                <p style="margin: 0; color: #92400e;">⚠️ <strong>Akhir chance!</strong> Had l'offre ghadi ttsala daba. Ma tfoutihlach!</p>
+              </div>
+              ` : ''}
+
+              <div style="text-align: center; margin-top: 30px;">
+                <a href="${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/cart" class="button">Kmmel L'Achat 🛍️</a>
+              </div>
+
+              <p style="margin-top: 30px; text-align: center; font-size: 14px; color: #999;">
+                Ila 3ndek chi sou2al, twasl m3ana!
+              </p>
+            </div>
+            <div class="footer">
+              <p>Ma bghitich t'recevoir had emails? <a href="${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/unsubscribe" style="color: #3b82f6;">Unsubscribe</a></p>
+              <p>&copy; ${new Date().getFullYear()} ${APP_NAME}. All rights reserved.</p>
+            </div>
+          </div>
+        </div>
+      </body>
+    </html>
+  `;
+
+  return sendEmail({
+    to,
+    subject,
+    html,
+  });
+}
+
+// Gift Card Email
+interface GiftCardEmailOptions {
+  to: string;
+  recipientName: string;
+  senderName: string;
+  amount: number;
+  code: string;
+  message?: string;
+  expiresAt: Date;
+}
+
+export async function sendGiftCardEmail({
+  to,
+  recipientName,
+  senderName,
+  amount,
+  code,
+  message,
+  expiresAt,
+}: GiftCardEmailOptions) {
+  const html = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+          body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f5f5f5; }
+          .wrapper { background-color: #f5f5f5; padding: 40px 20px; }
+          .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
+          .header { background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); padding: 40px 30px; text-align: center; }
+          .header h1 { color: white; margin: 0; font-size: 28px; }
+          .gift-icon { font-size: 60px; margin-bottom: 15px; }
+          .content { padding: 30px; text-align: center; }
+          .gift-card { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 16px; padding: 30px; margin: 20px 0; color: white; position: relative; overflow: hidden; }
+          .gift-card::before { content: ''; position: absolute; top: -50%; right: -50%; width: 100%; height: 100%; background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%); }
+          .gift-card .amount { font-size: 48px; font-weight: bold; margin: 10px 0; }
+          .gift-card .code { background: rgba(255,255,255,0.2); padding: 15px 25px; border-radius: 8px; font-size: 20px; letter-spacing: 3px; font-weight: bold; margin-top: 15px; display: inline-block; }
+          .message-box { background: #faf5ff; border-left: 4px solid #8b5cf6; padding: 20px; margin: 20px 0; text-align: left; border-radius: 0 8px 8px 0; }
+          .message-box .from { color: #6d28d9; font-weight: 600; margin-bottom: 10px; }
+          .footer { background-color: #f9fafb; padding: 20px 30px; text-align: center; font-size: 12px; color: #666; border-top: 1px solid #e5e7eb; }
+          .button { display: inline-block; padding: 16px 40px; background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); color: white !important; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px; margin-top: 20px; }
+          .expires { color: #666; font-size: 14px; margin-top: 20px; }
+        </style>
+      </head>
+      <body>
+        <div class="wrapper">
+          <div class="container">
+            <div class="header">
+              <div class="gift-icon">🎁</div>
+              <h1>3ndek Hadiya!</h1>
+            </div>
+            <div class="content">
+              <p style="font-size: 18px; color: #666;">Salam ${recipientName}!</p>
+              <p style="color: #333;">${senderName} sift lik Gift Card mn ${APP_NAME}!</p>
+
+              <div class="gift-card">
+                <p style="margin: 0; opacity: 0.9; font-size: 14px;">${APP_NAME} Gift Card</p>
+                <div class="amount">$${amount.toFixed(2)}</div>
+                <p style="margin: 5px 0 0; opacity: 0.9; font-size: 14px;">Code dyalk:</p>
+                <div class="code">${code}</div>
+              </div>
+
+              ${message ? `
+              <div class="message-box">
+                <p class="from">Message mn ${senderName}:</p>
+                <p style="margin: 0; color: #4a5568; font-style: italic;">"${message}"</p>
+              </div>
+              ` : ''}
+
+              <p style="color: #666;">Sta3mel had code f checkout bach tnq9es mn prix dyal commande dyalk!</p>
+
+              <a href="${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/products" class="button">Tshopping Daba! 🛍️</a>
+
+              <p class="expires">Had gift card valide 7ta l ${expiresAt.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+            </div>
+            <div class="footer">
+              <p>Kifash tsta3mel: Zid l code f checkout page w ghadi ytnq9es mn total dyalk.</p>
+              <p>&copy; ${new Date().getFullYear()} ${APP_NAME}. All rights reserved.</p>
+            </div>
+          </div>
+        </div>
+      </body>
+    </html>
+  `;
+
+  return sendEmail({
+    to,
+    subject: `🎁 ${senderName} sift lik $${amount} Gift Card!`,
+    html,
+  });
+}
