@@ -70,7 +70,6 @@ export default function SettingsPage() {
 
   const settings = data?.data;
 
-  // Initialize form values when settings load
   useEffect(() => {
     if (settings) {
       const values: Record<string, unknown> = {};
@@ -151,7 +150,7 @@ export default function SettingsPage() {
           <p className="text-red-500 mb-2">Failed to load settings</p>
           <button
             onClick={() => window.location.reload()}
-            className="text-primary-600 hover:underline"
+            className="text-blue-600 hover:underline dark:text-blue-400"
           >
             Try again
           </button>
@@ -165,14 +164,14 @@ export default function SettingsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
-          <p className="text-gray-500">Manage your store configuration</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Settings</h1>
+          <p className="text-gray-500 dark:text-gray-400">Manage your store configuration</p>
         </div>
         <div className="flex gap-3">
           <button
             onClick={handleReset}
             disabled={resetMutation.isPending}
-            className="inline-flex items-center gap-2 px-4 py-2 text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-4 py-2 text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 dark:text-gray-300 dark:border-gray-700 dark:hover:bg-gray-800"
           >
             {resetMutation.isPending ? (
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -184,7 +183,7 @@ export default function SettingsPage() {
           <button
             onClick={handleSave}
             disabled={!hasChanges || updateMutation.isPending}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
           >
             {updateMutation.isPending ? (
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -201,10 +200,10 @@ export default function SettingsPage() {
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-center gap-3"
+          className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-center gap-3 dark:bg-yellow-900/20 dark:border-yellow-800"
         >
-          <AlertTriangle className="h-5 w-5 text-yellow-600" />
-          <p className="text-yellow-800">You have unsaved changes</p>
+          <AlertTriangle className="h-5 w-5 text-yellow-600 dark:text-yellow-500" />
+          <p className="text-yellow-800 dark:text-yellow-200">You have unsaved changes</p>
         </motion.div>
       )}
 
@@ -220,18 +219,18 @@ export default function SettingsPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
-              className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden"
+              className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden dark:bg-gray-800 dark:border-gray-700"
             >
-              <div className="px-6 py-4 border-b border-gray-100 bg-gray-50">
+              <div className="px-6 py-4 border-b border-gray-100 bg-gray-50 dark:bg-gray-900 dark:border-gray-700">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-white rounded-lg shadow-sm">
+                  <div className="p-2 bg-white rounded-lg shadow-sm dark:bg-gray-800">
                     {categoryIcons[category] || <Settings className="h-5 w-5" />}
                   </div>
                   <div>
-                    <h2 className="text-lg font-semibold text-gray-900">
+                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
                       {categoryTitles[category] || category}
                     </h2>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
                       {categoryDescriptions[category]}
                     </p>
                   </div>
@@ -244,7 +243,7 @@ export default function SettingsPage() {
                     <div className="sm:w-1/3">
                       <label
                         htmlFor={setting.key}
-                        className="block text-sm font-medium text-gray-700"
+                        className="block text-sm font-medium text-gray-700 dark:text-gray-300"
                       >
                         {formatLabel(setting.key)}
                       </label>
@@ -264,10 +263,10 @@ export default function SettingsPage() {
                             onChange={(e) => handleChange(setting.key, e.target.checked)}
                             className="sr-only peer"
                           />
-                          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
-                          <span className="ms-3 text-sm text-gray-600">
+                          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                          <span className="ms-3 text-sm text-gray-600 dark:text-gray-400">
                             {formValues[setting.key] ? (
-                              <span className="flex items-center gap-1 text-green-600">
+                              <span className="flex items-center gap-1 text-green-600 dark:text-green-400">
                                 <Check className="h-4 w-4" /> Enabled
                               </span>
                             ) : (
@@ -281,7 +280,7 @@ export default function SettingsPage() {
                           id={setting.key}
                           value={formValues[setting.key] as number || 0}
                           onChange={(e) => handleChange(setting.key, parseFloat(e.target.value) || 0)}
-                          className="w-full max-w-xs px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                          className="w-full max-w-xs px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:border-gray-700 dark:bg-gray-900 dark:text-white"
                         />
                       ) : (
                         <input
@@ -289,7 +288,7 @@ export default function SettingsPage() {
                           id={setting.key}
                           value={formValues[setting.key] as string || ''}
                           onChange={(e) => handleChange(setting.key, e.target.value)}
-                          className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                          className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:border-gray-700 dark:bg-gray-900 dark:text-white"
                         />
                       )}
                     </div>
