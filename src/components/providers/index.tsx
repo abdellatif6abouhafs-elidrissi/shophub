@@ -7,6 +7,7 @@ import SessionProvider from './SessionProvider';
 import ThemeProvider from './ThemeProvider';
 import { QuickViewProvider } from '@/context/QuickViewContext';
 import { CompareProvider } from '@/context/CompareContext';
+import CurrencyProvider from '@/components/currency/CurrencyProvider';
 
 interface Props {
   children: React.ReactNode;
@@ -31,7 +32,9 @@ export default function Providers({ children }: Props) {
         <ThemeProvider>
           <QuickViewProvider>
             <CompareProvider>
-              {children}
+              <CurrencyProvider>
+                {children}
+              </CurrencyProvider>
               <Toaster
                 position="top-right"
                 toastOptions={{

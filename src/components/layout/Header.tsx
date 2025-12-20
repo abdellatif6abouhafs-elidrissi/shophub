@@ -23,6 +23,7 @@ import { useCartStore } from '@/store/cartStore';
 import Button from '../ui/Button';
 import SearchAutocomplete from '../search/SearchAutocomplete';
 import NotificationBell from '../notifications/NotificationBell';
+import CurrencySelector from '../currency/CurrencySelector';
 
 export default function Header() {
   const { data: session } = useSession();
@@ -90,6 +91,11 @@ export default function Header() {
             >
               <Search className="h-5 w-5" />
             </button>
+
+            {/* Currency Selector */}
+            <div className="hidden sm:block">
+              <CurrencySelector variant="header" />
+            </div>
 
             {/* Theme Toggle */}
             <button
@@ -255,6 +261,11 @@ export default function Header() {
               className="overflow-hidden border-t border-gray-200 dark:border-gray-800 md:hidden"
             >
               <nav className="flex flex-col space-y-2 py-4">
+                {/* Mobile Currency Selector */}
+                <div className="px-3 py-2 sm:hidden">
+                  <CurrencySelector variant="minimal" />
+                </div>
+                <hr className="border-gray-200 dark:border-gray-700 sm:hidden" />
                 <Link
                   href="/products"
                   className="rounded-lg px-3 py-2 text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
