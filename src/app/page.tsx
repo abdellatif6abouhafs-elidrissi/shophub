@@ -35,10 +35,26 @@ const features = [
 ];
 
 const categories = [
-  { name: 'Electronics', image: '/images/categories/electronics.jpg', slug: 'electronics' },
-  { name: 'Fashion', image: '/images/categories/fashion.jpg', slug: 'fashion' },
-  { name: 'Home & Living', image: '/images/categories/home.jpg', slug: 'home-living' },
-  { name: 'Sports', image: '/images/categories/sports.jpg', slug: 'sports' },
+  {
+    name: 'Electronics',
+    image: 'https://images.unsplash.com/photo-1498049794561-7780e7231661?w=600&q=80',
+    slug: 'electronics'
+  },
+  {
+    name: 'Fashion',
+    image: 'https://images.unsplash.com/photo-1445205170230-053b83016050?w=600&q=80',
+    slug: 'fashion'
+  },
+  {
+    name: 'Home & Living',
+    image: 'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?w=600&q=80',
+    slug: 'home-living'
+  },
+  {
+    name: 'Sports',
+    image: 'https://images.unsplash.com/photo-1517649763962-0c623066013b?w=600&q=80',
+    slug: 'sports'
+  },
 ];
 
 async function fetchFeaturedProducts(): Promise<IProduct[]> {
@@ -171,9 +187,15 @@ export default function HomePage() {
               >
                 <Link
                   href={`/products?category=${category.slug}`}
-                  className="group relative block aspect-square overflow-hidden rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600"
+                  className="group relative block aspect-square overflow-hidden rounded-xl"
                 >
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                  <Image
+                    src={category.image}
+                    alt={category.name}
+                    fill
+                    className="object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
                   <div className="absolute bottom-0 left-0 right-0 p-4">
                     <h3 className="text-lg font-semibold text-white">{category.name}</h3>
                     <span className="flex items-center text-sm text-gray-200 group-hover:text-blue-400">
