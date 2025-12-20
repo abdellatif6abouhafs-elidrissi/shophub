@@ -14,8 +14,10 @@ import {
   BarChart3,
   LogOut,
   Tag,
+  Bell,
 } from 'lucide-react';
 import { signOut } from 'next-auth/react';
+import NotificationBell from '@/components/notifications/NotificationBell';
 
 const sidebarLinks = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
@@ -24,6 +26,7 @@ const sidebarLinks = [
   { href: '/admin/users', label: 'Users', icon: Users },
   { href: '/admin/categories', label: 'Categories', icon: FolderTree },
   { href: '/admin/coupons', label: 'Coupons', icon: Tag },
+  { href: '/admin/notifications', label: 'Notifications', icon: Bell },
   { href: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
   { href: '/admin/settings', label: 'Settings', icon: Settings },
 ];
@@ -113,6 +116,26 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       {/* Main Content */}
       <main className="ml-64 flex-1">
+        {/* Top Header */}
+        <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-gray-200 bg-white/80 px-8 backdrop-blur-lg dark:border-gray-800 dark:bg-gray-950/80">
+          <div>
+            <h1 className="text-lg font-semibold text-gray-900 dark:text-white">
+              {sidebarLinks.find((link) =>
+                pathname === link.href ||
+                (link.href !== '/admin' && pathname.startsWith(link.href))
+              )?.label || 'Dashboard'}
+            </h1>
+          </div>
+          <div className="flex items-center gap-4">
+            <NotificationBell isAdmin />
+            <Link
+              href="/"
+              className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+            >
+              View Store
+            </Link>
+          </div>
+        </header>
         <div className="min-h-screen p-8">{children}</div>
       </main>
     </div>

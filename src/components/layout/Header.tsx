@@ -22,6 +22,7 @@ import { useTheme } from 'next-themes';
 import { useCartStore } from '@/store/cartStore';
 import Button from '../ui/Button';
 import SearchAutocomplete from '../search/SearchAutocomplete';
+import NotificationBell from '../notifications/NotificationBell';
 
 export default function Header() {
   const { data: session } = useSession();
@@ -114,6 +115,9 @@ export default function Header() {
             >
               <Heart className="h-5 w-5" />
             </Link>
+
+            {/* Notifications */}
+            {session && <NotificationBell />}
 
             {/* Cart */}
             <button
