@@ -25,10 +25,6 @@ export const metadata: Metadata = {
   keywords: ['ecommerce', 'online shopping', 'electronics', 'fashion', 'home goods'],
   authors: [{ name: 'ShopHub' }],
   creator: 'ShopHub',
-  icons: {
-    icon: '/icon.svg',
-    apple: '/icon.svg',
-  },
   openGraph: {
     type: 'website',
     locale: 'en_US',
