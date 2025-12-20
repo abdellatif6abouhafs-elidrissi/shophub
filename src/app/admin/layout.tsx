@@ -13,6 +13,7 @@ import {
   Settings,
   BarChart3,
   LogOut,
+  Tag,
 } from 'lucide-react';
 import { signOut } from 'next-auth/react';
 
@@ -22,6 +23,7 @@ const sidebarLinks = [
   { href: '/admin/orders', label: 'Orders', icon: ShoppingCart },
   { href: '/admin/users', label: 'Users', icon: Users },
   { href: '/admin/categories', label: 'Categories', icon: FolderTree },
+  { href: '/admin/coupons', label: 'Coupons', icon: Tag },
   { href: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
   { href: '/admin/settings', label: 'Settings', icon: Settings },
 ];
