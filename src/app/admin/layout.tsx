@@ -1,7 +1,6 @@
 'use client';
 
 import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -15,9 +14,11 @@ import {
   LogOut,
   Tag,
   Bell,
+  Shield,
 } from 'lucide-react';
 import { signOut } from 'next-auth/react';
 import NotificationBell from '@/components/notifications/NotificationBell';
+import { AdminGuard } from '@/components/auth';
 
 const sidebarLinks = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
@@ -32,24 +33,11 @@ const sidebarLinks = [
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const { data: session, status } = useSession();
-  const router = useRouter();
+  const { data: session } = useSession();
   const pathname = usePathname();
 
-  if (status === 'loading') {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
-      </div>
-    );
-  }
-
-  if (!session || session.user.role !== 'admin') {
-    router.push('/login');
-    return null;
-  }
-
   return (
+    <AdminGuard>
     <div className="flex min-h-screen bg-gray-100 dark:bg-gray-950">
       {/* Sidebar */}
       <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
@@ -97,10 +85,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </div>
             <div>
               <p className="text-sm font-medium text-gray-900 dark:text-white">
-                {session.user.name}
+                {session?.user?.name || 'Admin'}
               </p>
               <p className="text-xs text-gray-500 dark:text-gray-400">
-                {session.user.email}
+                {session?.user?.email || ''}
               </p>
             </div>
           </div>
@@ -139,5 +127,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="min-h-screen p-8">{children}</div>
       </main>
     </div>
+    </AdminGuard>
   );
 }
