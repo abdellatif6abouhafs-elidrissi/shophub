@@ -338,11 +338,11 @@ function CheckoutForm() {
           <div className="lg:col-span-2">
             <form onSubmit={handleSubmit}>
               {/* Progress Steps */}
-              <div className="mb-8 flex items-center justify-between">
+              <div className="mb-6 flex items-center justify-center sm:mb-8 sm:justify-between">
                 {['Shipping', 'Payment', 'Review'].map((label, index) => (
                   <div key={label} className="flex items-center">
                     <div
-                      className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium ${
+                      className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-medium sm:h-8 sm:w-8 sm:text-sm ${
                         step > index + 1
                           ? 'bg-green-500 text-white'
                           : step === index + 1
@@ -350,10 +350,10 @@ function CheckoutForm() {
                           : 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-400'
                       }`}
                     >
-                      {step > index + 1 ? <Check className="h-4 w-4" /> : index + 1}
+                      {step > index + 1 ? <Check className="h-3 w-3 sm:h-4 sm:w-4" /> : index + 1}
                     </div>
                     <span
-                      className={`ml-2 text-sm font-medium ${
+                      className={`ml-1.5 text-xs font-medium sm:ml-2 sm:text-sm ${
                         step >= index + 1
                           ? 'text-gray-900 dark:text-white'
                           : 'text-gray-400'
@@ -362,7 +362,7 @@ function CheckoutForm() {
                       {label}
                     </span>
                     {index < 2 && (
-                      <div className="mx-4 h-0.5 w-16 bg-gray-200 dark:bg-gray-700" />
+                      <div className="mx-2 h-0.5 w-6 bg-gray-200 dark:bg-gray-700 sm:mx-4 sm:w-12 lg:w-16" />
                     )}
                   </div>
                 ))}
