@@ -4,6 +4,8 @@ import { authOptions } from '@/lib/auth';
 import { connectDB } from '@/lib/db';
 import RefundRequest from '@/models/RefundRequest';
 import Order from '@/models/Order';
+import User from '@/models/User';
+import { sendRefundStatusEmail } from '@/lib/email';
 
 // Get a specific refund request
 export async function GET(
@@ -152,6 +154,33 @@ export async function PUT(
     }
 
     await refundRequest.save();
+
+    // Send status update email
+    try {
+      let customerEmail = refundRequest.guestEmail || '';
+      let customerName = 'Customer';
+
+      if (refundRequest.user) {
+        const user = await User.findById(refundRequest.user);
+        if (user) {
+          customerEmail = user.email;
+          customerName = user.name;
+        }
+      }
+
+      if (customerEmail && ['approved', 'rejected', 'completed'].includes(status)) {
+        await sendRefundStatusEmail(
+          customerEmail,
+          customerName,
+          refundRequest.requestNumber,
+          status as 'approved' | 'rejected' | 'completed',
+          refundRequest.refundAmount,
+          rejectionReason
+        );
+      }
+    } catch (emailError) {
+      console.error('Failed to send refund status email:', emailError);
+    }
 
     return NextResponse.json({
       success: true,

@@ -532,3 +532,277 @@ export async function sendWelcomeEmail(email: string, name: string) {
     html,
   });
 }
+
+// Refund Request Confirmation Email
+export async function sendRefundRequestEmail(
+  email: string,
+  name: string,
+  requestNumber: string,
+  orderNumber: string,
+  refundAmount: number,
+  items: Array<{ name: string; quantity: number }>
+) {
+  const itemsList = items.map(item => `<li>${item.name} (x${item.quantity})</li>`).join('');
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+          body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f5f5f5; }
+          .wrapper { background-color: #f5f5f5; padding: 40px 20px; }
+          .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
+          .header { background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); padding: 30px; text-align: center; }
+          .header h1 { color: white; margin: 0; font-size: 24px; }
+          .icon { width: 60px; height: 60px; background: white; border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; }
+          .content { padding: 30px; }
+          .request-box { background: #f0f9ff; border: 2px dashed #3b82f6; border-radius: 8px; padding: 20px; text-align: center; margin: 20px 0; }
+          .request-number { font-size: 20px; font-weight: bold; color: #1d4ed8; letter-spacing: 2px; }
+          .info-box { background: #f9fafb; border-radius: 8px; padding: 20px; margin: 20px 0; }
+          .footer { background-color: #f9fafb; padding: 20px 30px; text-align: center; font-size: 12px; color: #666; border-top: 1px solid #e5e7eb; }
+          .button { display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white !important; text-decoration: none; border-radius: 8px; font-weight: 600; }
+          ul { padding-left: 20px; }
+          li { margin: 5px 0; }
+        </style>
+      </head>
+      <body>
+        <div class="wrapper">
+          <div class="container">
+            <div class="header">
+              <div class="icon">
+                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2">
+                  <polyline points="23 4 23 10 17 10"></polyline>
+                  <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                </svg>
+              </div>
+              <h1>Refund Request Received</h1>
+            </div>
+            <div class="content">
+              <p>Hi ${name},</p>
+              <p>We've received your refund request and it's now being reviewed by our team.</p>
+
+              <div class="request-box">
+                <p style="margin: 0 0 5px; color: #666; font-size: 14px;">Request Number</p>
+                <span class="request-number">${requestNumber}</span>
+              </div>
+
+              <div class="info-box">
+                <h4 style="margin: 0 0 15px; color: #333;">Request Details</h4>
+                <p style="margin: 5px 0; color: #666;"><strong>Order:</strong> #${orderNumber}</p>
+                <p style="margin: 5px 0; color: #666;"><strong>Refund Amount:</strong> $${refundAmount.toFixed(2)}</p>
+                <p style="margin: 10px 0 5px; color: #666;"><strong>Items:</strong></p>
+                <ul style="color: #666;">${itemsList}</ul>
+              </div>
+
+              <div style="background: #fef3c7; border-radius: 8px; padding: 15px; margin: 20px 0;">
+                <p style="margin: 0; color: #92400e; font-size: 14px;">
+                  <strong>What happens next?</strong><br>
+                  Our team will review your request within 1-3 business days. You'll receive an email once a decision has been made.
+                </p>
+              </div>
+
+              <div style="text-align: center; margin-top: 30px;">
+                <a href="${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/profile/refunds" class="button">View Request Status</a>
+              </div>
+            </div>
+            <div class="footer">
+              <p>If you have any questions, please contact our support team.</p>
+              <p>&copy; ${new Date().getFullYear()} ${APP_NAME}. All rights reserved.</p>
+            </div>
+          </div>
+        </div>
+      </body>
+    </html>
+  `;
+
+  return sendEmail({
+    to: email,
+    subject: `Refund Request Received - ${requestNumber}`,
+    html,
+  });
+}
+
+// Refund Status Update Email
+export async function sendRefundStatusEmail(
+  email: string,
+  name: string,
+  requestNumber: string,
+  status: 'approved' | 'rejected' | 'completed',
+  refundAmount: number,
+  rejectionReason?: string
+) {
+  const statusConfig = {
+    approved: {
+      color: '#10b981',
+      title: 'Refund Approved',
+      icon: '<polyline points="20 6 9 17 4 12"></polyline>',
+      message: `Great news! Your refund request has been approved. We will process a refund of <strong>$${refundAmount.toFixed(2)}</strong> to your original payment method.`,
+    },
+    rejected: {
+      color: '#ef4444',
+      title: 'Refund Request Declined',
+      icon: '<circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line>',
+      message: `We're sorry, but your refund request has been declined.${rejectionReason ? `<br><br><strong>Reason:</strong> ${rejectionReason}` : ''}`,
+    },
+    completed: {
+      color: '#10b981',
+      title: 'Refund Completed',
+      icon: '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline>',
+      message: `Your refund of <strong>$${refundAmount.toFixed(2)}</strong> has been processed successfully. Please allow 5-10 business days for the funds to appear in your account.`,
+    },
+  };
+
+  const config = statusConfig[status];
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+          body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f5f5f5; }
+          .wrapper { background-color: #f5f5f5; padding: 40px 20px; }
+          .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
+          .header { background: linear-gradient(135deg, ${config.color} 0%, ${config.color}dd 100%); padding: 30px; text-align: center; }
+          .header h1 { color: white; margin: 0; font-size: 24px; }
+          .icon { width: 60px; height: 60px; background: white; border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; }
+          .content { padding: 30px; }
+          .status-badge { display: inline-block; padding: 8px 20px; background: ${config.color}15; color: ${config.color}; border-radius: 20px; font-weight: 600; text-transform: uppercase; font-size: 14px; letter-spacing: 1px; }
+          .footer { background-color: #f9fafb; padding: 20px 30px; text-align: center; font-size: 12px; color: #666; border-top: 1px solid #e5e7eb; }
+          .button { display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white !important; text-decoration: none; border-radius: 8px; font-weight: 600; }
+        </style>
+      </head>
+      <body>
+        <div class="wrapper">
+          <div class="container">
+            <div class="header">
+              <div class="icon">
+                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="${config.color}" stroke-width="2">
+                  ${config.icon}
+                </svg>
+              </div>
+              <h1>${config.title}</h1>
+            </div>
+            <div class="content">
+              <p>Hi ${name},</p>
+
+              <div style="text-align: center; margin: 30px 0;">
+                <span class="status-badge">${status}</span>
+                <p style="color: #666; font-size: 14px; margin-top: 10px;">Request #${requestNumber}</p>
+              </div>
+
+              <p>${config.message}</p>
+
+              ${status === 'completed' ? `
+              <div style="background: #f0fdf4; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: center;">
+                <p style="margin: 0 0 5px; color: #666; font-size: 14px;">Refund Amount</p>
+                <p style="margin: 0; font-size: 28px; font-weight: bold; color: #10b981;">$${refundAmount.toFixed(2)}</p>
+              </div>
+              ` : ''}
+
+              ${status === 'rejected' ? `
+              <p style="color: #666; font-size: 14px;">If you believe this decision was made in error, please contact our support team with additional information.</p>
+              ` : ''}
+
+              <div style="text-align: center; margin-top: 30px;">
+                <a href="${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/profile/refunds" class="button">View Details</a>
+              </div>
+            </div>
+            <div class="footer">
+              <p>If you have any questions, please contact our support team.</p>
+              <p>&copy; ${new Date().getFullYear()} ${APP_NAME}. All rights reserved.</p>
+            </div>
+          </div>
+        </div>
+      </body>
+    </html>
+  `;
+
+  return sendEmail({
+    to: email,
+    subject: `Refund ${status.charAt(0).toUpperCase() + status.slice(1)} - ${requestNumber}`,
+    html,
+  });
+}
+
+// Low Stock Alert Email (for admins)
+export async function sendLowStockAlertEmail(
+  email: string,
+  products: Array<{ name: string; stock: number; sku?: string }>
+) {
+  const productsList = products.map(p => `
+    <tr>
+      <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">${p.name}</td>
+      <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">${p.sku || 'N/A'}</td>
+      <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; text-align: center;">
+        <span style="background: ${p.stock === 0 ? '#fef2f2' : '#fef3c7'}; color: ${p.stock === 0 ? '#dc2626' : '#d97706'}; padding: 4px 12px; border-radius: 12px; font-weight: 600;">
+          ${p.stock}
+        </span>
+      </td>
+    </tr>
+  `).join('');
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+          body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f5f5f5; }
+          .wrapper { background-color: #f5f5f5; padding: 40px 20px; }
+          .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
+          .header { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); padding: 30px; text-align: center; }
+          .header h1 { color: white; margin: 0; font-size: 24px; }
+          .content { padding: 30px; }
+          table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+          th { background: #f9fafb; padding: 12px; text-align: left; border-bottom: 2px solid #e5e7eb; font-weight: 600; }
+          .footer { background-color: #f9fafb; padding: 20px 30px; text-align: center; font-size: 12px; color: #666; border-top: 1px solid #e5e7eb; }
+          .button { display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white !important; text-decoration: none; border-radius: 8px; font-weight: 600; }
+        </style>
+      </head>
+      <body>
+        <div class="wrapper">
+          <div class="container">
+            <div class="header">
+              <h1>Low Stock Alert</h1>
+            </div>
+            <div class="content">
+              <p>The following products are running low on stock and may need to be restocked:</p>
+
+              <table>
+                <thead>
+                  <tr>
+                    <th>Product</th>
+                    <th>SKU</th>
+                    <th style="text-align: center;">Stock</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${productsList}
+                </tbody>
+              </table>
+
+              <div style="text-align: center; margin-top: 30px;">
+                <a href="${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/admin/products" class="button">Manage Inventory</a>
+              </div>
+            </div>
+            <div class="footer">
+              <p>This is an automated alert from ${APP_NAME}.</p>
+              <p>&copy; ${new Date().getFullYear()} ${APP_NAME}. All rights reserved.</p>
+            </div>
+          </div>
+        </div>
+      </body>
+    </html>
+  `;
+
+  return sendEmail({
+    to: email,
+    subject: `Low Stock Alert - ${products.length} Product(s) Need Attention`,
+    html,
+  });
+}

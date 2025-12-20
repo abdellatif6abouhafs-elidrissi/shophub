@@ -4,6 +4,8 @@ import { authOptions } from '@/lib/auth';
 import { connectDB } from '@/lib/db';
 import RefundRequest from '@/models/RefundRequest';
 import Order from '@/models/Order';
+import User from '@/models/User';
+import { sendRefundRequestEmail } from '@/lib/email';
 
 // Create a new refund request
 export async function POST(request: NextRequest) {
@@ -140,6 +142,36 @@ export async function POST(request: NextRequest) {
       refundMethod: refundMethod || 'original_payment',
       images: images || [],
     });
+
+    // Send confirmation email
+    try {
+      let customerEmail = order.isGuestOrder ? order.guestEmail : '';
+      let customerName = order.isGuestOrder ? order.guestName : '';
+
+      if (session?.user?.id) {
+        const user = await User.findById(session.user.id);
+        if (user) {
+          customerEmail = user.email;
+          customerName = user.name;
+        }
+      }
+
+      if (customerEmail) {
+        await sendRefundRequestEmail(
+          customerEmail,
+          customerName || 'Customer',
+          refundRequest.requestNumber,
+          order.orderNumber,
+          refundAmount,
+          refundItems.map((item: { name: string; refundQuantity: number }) => ({
+            name: item.name,
+            quantity: item.refundQuantity,
+          }))
+        );
+      }
+    } catch (emailError) {
+      console.error('Failed to send refund request email:', emailError);
+    }
 
     return NextResponse.json({
       success: true,
