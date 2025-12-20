@@ -6,7 +6,7 @@ import { useSession } from 'next-auth/react';
 import { motion } from 'framer-motion';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
-import { CreditCard, Truck, MapPin, ArrowLeft, ShoppingBag, Check } from 'lucide-react';
+import { CreditCard, Truck, MapPin, ArrowLeft, ShoppingBag, Check, User, Mail } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCartStore } from '@/store/cartStore';
@@ -27,16 +27,26 @@ interface AddressForm {
   country: string;
 }
 
+interface GuestInfo {
+  email: string;
+  name: string;
+}
+
 function CheckoutForm() {
   const router = useRouter();
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const stripe = useStripe();
   const elements = useElements();
   const { items, getTotalPrice, clearCart, _hasHydrated } = useCartStore();
 
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(0); // 0 = choose auth method, 1 = shipping, 2 = payment, 3 = review
   const [isLoading, setIsLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<'stripe' | 'cod'>('stripe');
+  const [isGuestCheckout, setIsGuestCheckout] = useState(false);
+  const [guestInfo, setGuestInfo] = useState<GuestInfo>({
+    email: '',
+    name: '',
+  });
   const [address, setAddress] = useState<AddressForm>({
     fullName: '',
     phone: '',
@@ -52,11 +62,12 @@ function CheckoutForm() {
   const tax = subtotal * 0.08;
   const total = subtotal + shipping + tax;
 
+  // Set step based on session status
   useEffect(() => {
-    if (!session) {
-      router.push('/login?callbackUrl=/checkout');
+    if (status === 'authenticated' && step === 0) {
+      setStep(1); // Skip auth choice for logged in users
     }
-  }, [session, router]);
+  }, [status, step]);
 
   useEffect(() => {
     // Only redirect after hydration is complete and cart is truly empty
@@ -78,6 +89,25 @@ function CheckoutForm() {
       }
     }
     return true;
+  };
+
+  const validateGuestInfo = () => {
+    if (!guestInfo.email) {
+      toast.error('Please enter your email address');
+      return false;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guestInfo.email)) {
+      toast.error('Please enter a valid email address');
+      return false;
+    }
+    return true;
+  };
+
+  const handleGuestContinue = () => {
+    if (validateGuestInfo()) {
+      setIsGuestCheckout(true);
+      setStep(1);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -130,21 +160,30 @@ function CheckoutForm() {
       }
 
       // Create order with cart items from client
+      const orderPayload: Record<string, unknown> = {
+        shippingAddress: address,
+        paymentMethod,
+        items: items.map(item => ({
+          productId: item.productId,
+          name: item.name,
+          price: item.price,
+          image: item.image,
+          quantity: item.quantity,
+          variant: item.variant,
+        })),
+      };
+
+      // Add guest checkout data
+      if (isGuestCheckout) {
+        orderPayload.isGuestCheckout = true;
+        orderPayload.guestEmail = guestInfo.email;
+        orderPayload.guestName = guestInfo.name || address.fullName;
+      }
+
       const orderRes = await fetch('/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          shippingAddress: address,
-          paymentMethod,
-          items: items.map(item => ({
-            productId: item.productId,
-            name: item.name,
-            price: item.price,
-            image: item.image,
-            quantity: item.quantity,
-            variant: item.variant,
-          })),
-        }),
+        body: JSON.stringify(orderPayload),
       });
 
       const orderData = await orderRes.json();
@@ -155,7 +194,13 @@ function CheckoutForm() {
 
       clearCart();
       toast.success('Order placed successfully!');
-      router.push(`/profile/orders/${orderData.data._id}`);
+
+      // Redirect based on user type
+      if (isGuestCheckout) {
+        router.push(`/order-confirmation?orderNumber=${orderData.data.orderNumber}&email=${encodeURIComponent(guestInfo.email)}`);
+      } else {
+        router.push(`/profile/orders/${orderData.data._id}`);
+      }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Checkout failed');
     } finally {
@@ -163,8 +208,8 @@ function CheckoutForm() {
     }
   };
 
-  // Show loading while hydrating or if no session/items
-  if (!_hasHydrated) {
+  // Show loading while hydrating
+  if (!_hasHydrated || status === 'loading') {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-950">
         <div className="text-center">
@@ -175,8 +220,105 @@ function CheckoutForm() {
     );
   }
 
-  if (!session || items.length === 0) {
+  if (items.length === 0) {
     return null;
+  }
+
+  // Step 0: Auth Choice (only for non-authenticated users)
+  if (step === 0 && !session) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8 dark:bg-gray-950">
+        <div className="mx-auto max-w-2xl px-4 sm:px-6 lg:px-8">
+          <Link
+            href="/cart"
+            className="mb-6 inline-flex items-center text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Cart
+          </Link>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="rounded-xl bg-white p-8 shadow-sm dark:bg-gray-900"
+          >
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 text-center">
+              How would you like to checkout?
+            </h1>
+
+            <div className="space-y-4">
+              {/* Login Option */}
+              <Link
+                href="/login?callbackUrl=/checkout"
+                className="flex items-center gap-4 rounded-lg border-2 border-gray-200 p-4 transition-colors hover:border-blue-600 hover:bg-blue-50 dark:border-gray-700 dark:hover:bg-blue-900/20"
+              >
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30">
+                  <User className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-semibold text-gray-900 dark:text-white">
+                    Sign in to your account
+                  </p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Track orders and access your order history
+                  </p>
+                </div>
+                <ArrowLeft className="h-5 w-5 rotate-180 text-gray-400" />
+              </Link>
+
+              {/* Divider */}
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-200 dark:border-gray-700"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="bg-white px-4 text-gray-500 dark:bg-gray-900 dark:text-gray-400">
+                    or
+                  </span>
+                </div>
+              </div>
+
+              {/* Guest Checkout Option */}
+              <div className="rounded-lg border-2 border-gray-200 p-4 dark:border-gray-700">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800">
+                    <Mail className="h-6 w-6 text-gray-600 dark:text-gray-400" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold text-gray-900 dark:text-white">
+                      Continue as Guest
+                    </p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      Checkout without creating an account
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <Input
+                    label="Email Address"
+                    type="email"
+                    value={guestInfo.email}
+                    onChange={(e) => setGuestInfo((prev) => ({ ...prev, email: e.target.value }))}
+                    placeholder="Enter your email for order updates"
+                    required
+                  />
+                  <Input
+                    label="Name (Optional)"
+                    value={guestInfo.name}
+                    onChange={(e) => setGuestInfo((prev) => ({ ...prev, name: e.target.value }))}
+                    placeholder="Enter your name"
+                  />
+                  <Button onClick={handleGuestContinue} className="w-full">
+                    Continue as Guest
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </div>
+    );
   }
 
   return (

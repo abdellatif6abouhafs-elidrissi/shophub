@@ -37,15 +37,21 @@ export async function GET(
     }
 
     // Check if user owns the order or is admin
-    const orderUserId = (order.user as any)?._id?.toString() || order.user?.toString();
-    if (
-      session.user.role !== 'admin' &&
-      orderUserId !== session.user.id
-    ) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      );
+    // Guest orders can only be viewed by admin (guests use /api/orders/guest endpoint)
+    if (session.user.role !== 'admin') {
+      if ((order as any).isGuestOrder) {
+        return NextResponse.json(
+          { success: false, error: 'Unauthorized' },
+          { status: 401 }
+        );
+      }
+      const orderUserId = (order.user as any)?._id?.toString() || order.user?.toString();
+      if (orderUserId !== session.user.id) {
+        return NextResponse.json(
+          { success: false, error: 'Unauthorized' },
+          { status: 401 }
+        );
+      }
     }
 
     return NextResponse.json({ success: true, data: order });
@@ -118,25 +124,42 @@ export async function PUT(
 
     // Send email notification for status updates
     if (validation.data.orderStatus) {
-      const user = order.user as unknown as { _id: string; name: string; email: string };
-      await sendOrderStatusEmail(
-        user.email,
-        user.name,
-        order.orderNumber,
-        validation.data.orderStatus,
-        order.trackingNumber
-      );
+      let email: string;
+      let name: string;
+      let userId: string | null = null;
 
-      // Send in-app notification to user
-      try {
-        await notifyOrderStatusChange(
-          order._id.toString(),
+      if (order.isGuestOrder) {
+        email = order.guestEmail || '';
+        name = order.guestName || order.shippingAddress?.fullName || 'Customer';
+      } else {
+        const user = order.user as unknown as { _id: string; name: string; email: string };
+        email = user?.email || '';
+        name = user?.name || 'Customer';
+        userId = user?._id?.toString() || null;
+      }
+
+      if (email) {
+        await sendOrderStatusEmail(
+          email,
+          name,
           order.orderNumber,
-          user._id.toString(),
-          validation.data.orderStatus
+          validation.data.orderStatus,
+          order.trackingNumber
         );
-      } catch (notifyError) {
-        console.error('Failed to send status notification:', notifyError);
+      }
+
+      // Send in-app notification to user (only for registered users)
+      if (userId) {
+        try {
+          await notifyOrderStatusChange(
+            order._id.toString(),
+            order.orderNumber,
+            userId,
+            validation.data.orderStatus
+          );
+        } catch (notifyError) {
+          console.error('Failed to send status notification:', notifyError);
+        }
       }
     }
 
@@ -178,15 +201,20 @@ export async function DELETE(
       );
     }
 
-    // Check ownership
-    if (
-      session.user.role !== 'admin' &&
-      order.user.toString() !== session.user.id
-    ) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      );
+    // Check ownership (guest orders can only be cancelled by admin)
+    if (session.user.role !== 'admin') {
+      if (order.isGuestOrder) {
+        return NextResponse.json(
+          { success: false, error: 'Guest orders can only be cancelled by admin' },
+          { status: 401 }
+        );
+      }
+      if (order.user?.toString() !== session.user.id) {
+        return NextResponse.json(
+          { success: false, error: 'Unauthorized' },
+          { status: 401 }
+        );
+      }
     }
 
     // Can only cancel pending orders
@@ -201,25 +229,38 @@ export async function DELETE(
     await order.save();
 
     // Send cancellation email and notification
-    const user = await User.findById(order.user);
-    if (user) {
-      await sendOrderStatusEmail(
-        user.email,
-        user.name,
-        order.orderNumber,
-        'cancelled'
-      );
-
-      // Send in-app notification
-      try {
-        await notifyOrderStatusChange(
-          order._id.toString(),
+    if (order.isGuestOrder) {
+      // Guest order - send email to guest
+      if (order.guestEmail) {
+        await sendOrderStatusEmail(
+          order.guestEmail,
+          order.guestName || 'Customer',
           order.orderNumber,
-          user._id.toString(),
           'cancelled'
         );
-      } catch (notifyError) {
-        console.error('Failed to send cancellation notification:', notifyError);
+      }
+    } else {
+      // Registered user order
+      const user = await User.findById(order.user);
+      if (user) {
+        await sendOrderStatusEmail(
+          user.email,
+          user.name,
+          order.orderNumber,
+          'cancelled'
+        );
+
+        // Send in-app notification (only for registered users)
+        try {
+          await notifyOrderStatusChange(
+            order._id.toString(),
+            order.orderNumber,
+            user._id.toString(),
+            'cancelled'
+          );
+        } catch (notifyError) {
+          console.error('Failed to send cancellation notification:', notifyError);
+        }
       }
     }
 

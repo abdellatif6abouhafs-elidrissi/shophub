@@ -25,7 +25,10 @@ export interface IOrderItem {
 export interface IOrderDocument extends Document {
   _id: mongoose.Types.ObjectId;
   orderNumber: string;
-  user: mongoose.Types.ObjectId | string;
+  user?: mongoose.Types.ObjectId | string; // Optional for guest checkout
+  guestEmail?: string; // Email for guest orders
+  guestName?: string; // Name for guest orders
+  isGuestOrder: boolean;
   items: IOrderItem[];
   shippingAddress: IOrderAddress;
   billingAddress?: IOrderAddress;
@@ -88,7 +91,19 @@ const orderSchema = new Schema<IOrderDocument>(
     user: {
       type: Schema.Types.ObjectId,
       ref: 'User',
-      required: true,
+      required: false, // Optional for guest checkout
+    },
+    guestEmail: {
+      type: String,
+      required: false,
+    },
+    guestName: {
+      type: String,
+      required: false,
+    },
+    isGuestOrder: {
+      type: Boolean,
+      default: false,
     },
     items: {
       type: [orderItemSchema],
@@ -172,6 +187,7 @@ orderSchema.pre('validate', async function () {
 // Indexes for faster queries
 orderSchema.index({ orderNumber: 1 });
 orderSchema.index({ user: 1 });
+orderSchema.index({ guestEmail: 1 });
 orderSchema.index({ orderStatus: 1 });
 orderSchema.index({ paymentStatus: 1 });
 orderSchema.index({ createdAt: -1 });

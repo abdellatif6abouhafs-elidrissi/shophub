@@ -27,7 +27,10 @@ import toast from 'react-hot-toast';
 interface Order {
   _id: string;
   orderNumber: string;
-  user: { name: string; email: string };
+  user?: { name: string; email: string };
+  isGuestOrder?: boolean;
+  guestEmail?: string;
+  guestName?: string;
   items: Array<{
     name: string;
     image: string;
@@ -38,6 +41,7 @@ interface Order {
   orderStatus: string;
   paymentStatus: string;
   shippingAddress: {
+    fullName: string;
     street: string;
     city: string;
     state: string;
@@ -283,11 +287,22 @@ export default function AdminOrdersPage() {
                       </td>
                       <td className="px-6 py-4">
                         <div>
-                          <p className="font-medium text-gray-900 dark:text-white">
-                            {order.user?.name || 'Guest'}
-                          </p>
+                          <div className="flex items-center gap-2">
+                            <p className="font-medium text-gray-900 dark:text-white">
+                              {order.isGuestOrder
+                                ? order.guestName || order.shippingAddress?.fullName || 'Guest'
+                                : order.user?.name || 'Unknown'}
+                            </p>
+                            {order.isGuestOrder && (
+                              <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600 dark:bg-gray-700 dark:text-gray-300">
+                                Guest
+                              </span>
+                            )}
+                          </div>
                           <p className="text-sm text-gray-500 dark:text-gray-400">
-                            {order.user?.email || 'N/A'}
+                            {order.isGuestOrder
+                              ? order.guestEmail || 'N/A'
+                              : order.user?.email || 'N/A'}
                           </p>
                         </div>
                       </td>

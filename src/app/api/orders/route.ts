@@ -97,25 +97,39 @@ const createOrderSchema = z.object({
   paymentMethod: z.enum(['stripe', 'paypal', 'cod']),
   notes: z.string().optional(),
   items: z.array(cartItemSchema).optional(), // Accept items from client
+  // Guest checkout fields
+  isGuestCheckout: z.boolean().optional(),
+  guestEmail: z.string().email().optional(),
+  guestName: z.string().optional(),
 });
 
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-
-    if (!session) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
     const body = await request.json();
 
     const validation = createOrderSchema.safeParse(body);
     if (!validation.success) {
       return NextResponse.json(
         { success: false, error: validation.error.issues[0].message },
+        { status: 400 }
+      );
+    }
+
+    const isGuestCheckout = validation.data.isGuestCheckout && !session;
+
+    // Require either session or guest email
+    if (!session && !isGuestCheckout) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    // Validate guest checkout has email
+    if (isGuestCheckout && !validation.data.guestEmail) {
+      return NextResponse.json(
+        { success: false, error: 'Email is required for guest checkout' },
         { status: 400 }
       );
     }
@@ -151,8 +165,8 @@ export async function POST(request: NextRequest) {
           variant: item.variant,
         });
       }
-    } else {
-      // Fallback to server-side cart (MongoDB)
+    } else if (!isGuestCheckout && session) {
+      // Fallback to server-side cart (MongoDB) - only for logged in users
       const cart = await Cart.findOne({ user: session.user.id }).populate({
         path: 'items.product',
         select: 'name price images stock',
@@ -193,6 +207,12 @@ export async function POST(request: NextRequest) {
 
       // Clear server-side cart after order
       await Cart.findOneAndDelete({ user: session.user.id });
+    } else {
+      // Guest checkout must provide items from client
+      return NextResponse.json(
+        { success: false, error: 'Cart items are required for guest checkout' },
+        { status: 400 }
+      );
     }
 
     // Calculate totals
@@ -202,8 +222,7 @@ export async function POST(request: NextRequest) {
     const total = subtotal + shippingCost + tax;
 
     // Create order
-    const order = await Order.create({
-      user: session.user.id,
+    const orderData: Record<string, unknown> = {
       items: orderItems,
       shippingAddress: validation.data.shippingAddress,
       billingAddress: validation.data.billingAddress || validation.data.shippingAddress,
@@ -216,7 +235,18 @@ export async function POST(request: NextRequest) {
       discount: 0,
       total,
       notes: validation.data.notes,
-    });
+      isGuestOrder: isGuestCheckout,
+    };
+
+    // Set user or guest info
+    if (isGuestCheckout) {
+      orderData.guestEmail = validation.data.guestEmail;
+      orderData.guestName = validation.data.guestName || validation.data.shippingAddress.fullName;
+    } else {
+      orderData.user = session!.user.id;
+    }
+
+    const order = await Order.create(orderData);
 
     // Update product stock and check for low stock
     const LOW_STOCK_THRESHOLD = 10;
@@ -243,11 +273,22 @@ export async function POST(request: NextRequest) {
 
     // Send order confirmation email
     try {
-      const user = await User.findById(session.user.id);
-      if (user?.email) {
+      let email: string | undefined;
+      let name: string;
+
+      if (isGuestCheckout) {
+        email = validation.data.guestEmail;
+        name = validation.data.guestName || validation.data.shippingAddress.fullName;
+      } else {
+        const user = await User.findById(session!.user.id);
+        email = user?.email;
+        name = user?.name || validation.data.shippingAddress.fullName;
+      }
+
+      if (email) {
         await sendOrderConfirmationEmail(
-          user.email,
-          user.name || validation.data.shippingAddress.fullName,
+          email,
+          name,
           order.orderNumber,
           {
             items: orderItems.map((item) => ({
@@ -273,7 +314,8 @@ export async function POST(request: NextRequest) {
 
     // Send notification to admin about new order
     try {
-      await notifyOrderPlaced(order._id.toString(), order.orderNumber, session.user.id, total);
+      const userId = isGuestCheckout ? 'guest' : session!.user.id;
+      await notifyOrderPlaced(order._id.toString(), order.orderNumber, userId, total);
     } catch (notifyError) {
       console.error('Failed to send order notification:', notifyError);
     }
