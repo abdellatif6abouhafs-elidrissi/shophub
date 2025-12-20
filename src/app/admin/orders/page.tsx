@@ -127,9 +127,9 @@ export default function AdminOrdersPage() {
   return (
     <div>
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Orders</h1>
-        <p className="mt-1 text-gray-600 dark:text-gray-400">
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-xl font-bold text-gray-900 dark:text-white sm:text-2xl">Orders</h1>
+        <p className="mt-1 text-sm text-gray-600 dark:text-gray-400 sm:text-base">
           Manage and track customer orders
         </p>
       </div>
@@ -164,34 +164,36 @@ export default function AdminOrdersPage() {
 
       {/* Filters */}
       <div className="mb-6 rounded-xl bg-white p-4 shadow-sm dark:bg-gray-900">
-        <form onSubmit={handleSearch} className="flex flex-wrap gap-4">
+        <form onSubmit={handleSearch} className="flex flex-col gap-3 sm:flex-row sm:gap-4">
           <div className="flex-1">
             <Input
-              placeholder="Search by order number or customer..."
+              placeholder="Search orders..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               leftIcon={<Search className="h-4 w-4" />}
             />
           </div>
-          <select
-            value={status}
-            onChange={(e) => {
-              setStatus(e.target.value);
-              setPage(1);
-            }}
-            className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-white"
-          >
-            <option value="">All Statuses</option>
-            {orderStatuses.map((s) => (
-              <option key={s} value={s}>
-                {s.charAt(0).toUpperCase() + s.slice(1)}
-              </option>
-            ))}
-          </select>
-          <Button type="submit" variant="outline">
-            <Filter className="mr-2 h-4 w-4" />
-            Filter
-          </Button>
+          <div className="flex gap-2 sm:gap-4">
+            <select
+              value={status}
+              onChange={(e) => {
+                setStatus(e.target.value);
+                setPage(1);
+              }}
+              className="flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-white sm:flex-none sm:px-4"
+            >
+              <option value="">All Status</option>
+              {orderStatuses.map((s) => (
+                <option key={s} value={s}>
+                  {s.charAt(0).toUpperCase() + s.slice(1)}
+                </option>
+              ))}
+            </select>
+            <Button type="submit" variant="outline">
+              <Filter className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Filter</span>
+            </Button>
+          </div>
         </form>
       </div>
 
@@ -201,28 +203,28 @@ export default function AdminOrdersPage() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800">
-                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-400">
+                <th className="whitespace-nowrap px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-400 sm:px-6">
                   Order
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-400">
+                <th className="whitespace-nowrap px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-400 sm:px-6">
                   Customer
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-400">
+                <th className="whitespace-nowrap px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-400 sm:px-6">
                   Items
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-400">
+                <th className="whitespace-nowrap px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-400 sm:px-6">
                   Total
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-400">
+                <th className="whitespace-nowrap px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-400 sm:px-6">
                   Status
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-400">
+                <th className="whitespace-nowrap px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-400 sm:px-6">
                   Payment
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-400">
+                <th className="whitespace-nowrap px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-400 sm:px-6">
                   Date
                 </th>
-                <th className="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-400">
+                <th className="whitespace-nowrap px-3 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-400 sm:px-6">
                   Actions
                 </th>
               </tr>
@@ -231,29 +233,29 @@ export default function AdminOrdersPage() {
               {isLoading ? (
                 [...Array(5)].map((_, i) => (
                   <tr key={i} className="animate-pulse">
-                    <td className="px-6 py-4">
-                      <div className="h-4 w-24 rounded bg-gray-200 dark:bg-gray-700" />
+                    <td className="px-3 py-3 sm:px-6 sm:py-4">
+                      <div className="h-4 w-20 rounded bg-gray-200 dark:bg-gray-700 sm:w-24" />
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="h-4 w-32 rounded bg-gray-200 dark:bg-gray-700" />
+                    <td className="px-3 py-3 sm:px-6 sm:py-4">
+                      <div className="h-4 w-24 rounded bg-gray-200 dark:bg-gray-700 sm:w-32" />
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="h-4 w-16 rounded bg-gray-200 dark:bg-gray-700" />
+                    <td className="px-3 py-3 sm:px-6 sm:py-4">
+                      <div className="h-4 w-12 rounded bg-gray-200 dark:bg-gray-700 sm:w-16" />
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="h-4 w-20 rounded bg-gray-200 dark:bg-gray-700" />
+                    <td className="px-3 py-3 sm:px-6 sm:py-4">
+                      <div className="h-4 w-16 rounded bg-gray-200 dark:bg-gray-700 sm:w-20" />
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="h-6 w-20 rounded bg-gray-200 dark:bg-gray-700" />
+                    <td className="px-3 py-3 sm:px-6 sm:py-4">
+                      <div className="h-6 w-16 rounded bg-gray-200 dark:bg-gray-700 sm:w-20" />
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="h-6 w-16 rounded bg-gray-200 dark:bg-gray-700" />
+                    <td className="px-3 py-3 sm:px-6 sm:py-4">
+                      <div className="h-6 w-14 rounded bg-gray-200 dark:bg-gray-700 sm:w-16" />
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="h-4 w-24 rounded bg-gray-200 dark:bg-gray-700" />
+                    <td className="px-3 py-3 sm:px-6 sm:py-4">
+                      <div className="h-4 w-20 rounded bg-gray-200 dark:bg-gray-700 sm:w-24" />
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="h-8 w-20 rounded bg-gray-200 dark:bg-gray-700" />
+                    <td className="px-3 py-3 sm:px-6 sm:py-4">
+                      <div className="h-8 w-8 rounded bg-gray-200 dark:bg-gray-700" />
                     </td>
                   </tr>
                 ))
@@ -280,38 +282,38 @@ export default function AdminOrdersPage() {
                       transition={{ delay: index * 0.05 }}
                       className="hover:bg-gray-50 dark:hover:bg-gray-800"
                     >
-                      <td className="px-6 py-4">
-                        <p className="font-medium text-gray-900 dark:text-white">
+                      <td className="whitespace-nowrap px-3 py-3 sm:px-6 sm:py-4">
+                        <p className="text-sm font-medium text-gray-900 dark:text-white">
                           #{order.orderNumber}
                         </p>
                       </td>
-                      <td className="px-6 py-4">
-                        <div>
+                      <td className="px-3 py-3 sm:px-6 sm:py-4">
+                        <div className="min-w-[120px]">
                           <div className="flex items-center gap-2">
-                            <p className="font-medium text-gray-900 dark:text-white">
+                            <p className="truncate text-sm font-medium text-gray-900 dark:text-white">
                               {order.isGuestOrder
                                 ? order.guestName || order.shippingAddress?.fullName || 'Guest'
                                 : order.user?.name || 'Unknown'}
                             </p>
                             {order.isGuestOrder && (
-                              <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600 dark:bg-gray-700 dark:text-gray-300">
+                              <span className="hidden items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600 dark:bg-gray-700 dark:text-gray-300 sm:inline-flex">
                                 Guest
                               </span>
                             )}
                           </div>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">
+                          <p className="hidden truncate text-xs text-gray-500 dark:text-gray-400 sm:block sm:text-sm">
                             {order.isGuestOrder
                               ? order.guestEmail || 'N/A'
                               : order.user?.email || 'N/A'}
                           </p>
                         </div>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-3 py-3 sm:px-6 sm:py-4">
                         <div className="flex -space-x-2">
-                          {order.items.slice(0, 3).map((item, idx) => (
+                          {order.items.slice(0, 2).map((item, idx) => (
                             <div
                               key={idx}
-                              className="relative h-8 w-8 overflow-hidden rounded-full border-2 border-white bg-gray-100 dark:border-gray-800 dark:bg-gray-700"
+                              className="relative h-7 w-7 overflow-hidden rounded-full border-2 border-white bg-gray-100 dark:border-gray-800 dark:bg-gray-700 sm:h-8 sm:w-8"
                             >
                               {item.image ? (
                                 <Image
@@ -321,32 +323,33 @@ export default function AdminOrdersPage() {
                                   className="object-cover"
                                 />
                               ) : (
-                                <Package className="h-4 w-4 text-gray-400 m-auto mt-2" />
+                                <Package className="m-auto mt-1.5 h-3 w-3 text-gray-400 sm:mt-2 sm:h-4 sm:w-4" />
                               )}
                             </div>
                           ))}
-                          {order.items.length > 3 && (
-                            <div className="relative flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-gray-200 text-xs font-medium text-gray-600 dark:border-gray-800 dark:bg-gray-600 dark:text-gray-300">
-                              +{order.items.length - 3}
+                          {order.items.length > 2 && (
+                            <div className="relative flex h-7 w-7 items-center justify-center rounded-full border-2 border-white bg-gray-200 text-xs font-medium text-gray-600 dark:border-gray-800 dark:bg-gray-600 dark:text-gray-300 sm:h-8 sm:w-8">
+                              +{order.items.length - 2}
                             </div>
                           )}
                         </div>
                       </td>
-                      <td className="px-6 py-4">
-                        <p className="font-medium text-gray-900 dark:text-white">
+                      <td className="whitespace-nowrap px-3 py-3 sm:px-6 sm:py-4">
+                        <p className="text-sm font-medium text-gray-900 dark:text-white">
                           {formatPrice(order.total)}
                         </p>
                       </td>
-                      <td className="px-6 py-4">
-                        <div className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 ${statusInfo.bg}`}>
-                          <StatusIcon className={`h-3.5 w-3.5 ${statusInfo.color}`} />
+                      <td className="px-3 py-3 sm:px-6 sm:py-4">
+                        <div className={`inline-flex items-center gap-1 rounded-full px-2 py-1 sm:gap-1.5 sm:px-3 ${statusInfo.bg}`}>
+                          <StatusIcon className={`h-3 w-3 sm:h-3.5 sm:w-3.5 ${statusInfo.color}`} />
                           <span className={`text-xs font-medium capitalize ${statusInfo.color}`}>
                             {order.orderStatus}
                           </span>
                         </div>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-3 py-3 sm:px-6 sm:py-4">
                         <Badge
+                          size="sm"
                           variant={
                             order.paymentStatus === 'paid'
                               ? 'success'
@@ -358,21 +361,19 @@ export default function AdminOrdersPage() {
                           {order.paymentStatus}
                         </Badge>
                       </td>
-                      <td className="px-6 py-4">
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                      <td className="whitespace-nowrap px-3 py-3 sm:px-6 sm:py-4">
+                        <p className="text-xs text-gray-600 dark:text-gray-400 sm:text-sm">
                           {formatDate(order.createdAt)}
                         </p>
                       </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center justify-end gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => openOrderDetails(order)}
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                        </div>
+                      <td className="px-3 py-3 sm:px-6 sm:py-4">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => openOrderDetails(order)}
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
                       </td>
                     </motion.tr>
                   );
@@ -384,10 +385,10 @@ export default function AdminOrdersPage() {
 
         {/* Pagination */}
         {pagination.pages > 1 && (
-          <div className="flex items-center justify-between border-t border-gray-200 px-6 py-4 dark:border-gray-700">
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Showing {(page - 1) * 10 + 1} to {Math.min(page * 10, pagination.total)} of{' '}
-              {pagination.total} orders
+          <div className="flex flex-col items-center justify-between gap-3 border-t border-gray-200 px-4 py-4 dark:border-gray-700 sm:flex-row sm:px-6">
+            <p className="text-xs text-gray-600 dark:text-gray-400 sm:text-sm">
+              Showing {(page - 1) * 10 + 1}-{Math.min(page * 10, pagination.total)} of{' '}
+              {pagination.total}
             </p>
             <div className="flex items-center gap-2">
               <Button
@@ -398,8 +399,8 @@ export default function AdminOrdersPage() {
               >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
-              <span className="text-sm text-gray-600 dark:text-gray-400">
-                Page {page} of {pagination.pages}
+              <span className="text-xs text-gray-600 dark:text-gray-400 sm:text-sm">
+                {page} / {pagination.pages}
               </span>
               <Button
                 variant="outline"
