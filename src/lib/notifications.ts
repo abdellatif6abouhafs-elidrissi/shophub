@@ -152,7 +152,7 @@ export async function notifyNewReview(
     type: 'new_review',
     title: 'New Product Review',
     message: `${userName} left a ${rating}-star review on "${productName}".`,
-    link: `/admin/products/${productId}`,
+    link: `/admin/products/${productId}/edit`,
     isAdmin: true,
     metadata: { productId, productName, userId, userName, rating },
   });
