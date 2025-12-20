@@ -90,11 +90,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           {/* Logo */}
           <div className="flex h-16 items-center justify-between border-b border-gray-200 px-4 dark:border-gray-800">
             <Link href="/admin" className="flex items-center space-x-2">
-              <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-blue-600">
-                <span className="text-lg font-bold text-white">S</span>
-              </div>
+              <img src="/icon.svg" alt="ShopHub" className="h-8 w-8 flex-shrink-0" />
               {!isCollapsed && (
-                <span className="text-xl font-bold text-gray-900 dark:text-white">
+                <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent dark:from-blue-400 dark:to-blue-600">
                   Admin
                 </span>
               )}
