@@ -8,6 +8,7 @@ import Button from '@/components/ui/Button';
 import ProductCard from '@/components/product/ProductCard';
 import RecentlyViewed from '@/components/product/RecentlyViewed';
 import { ProductGridSkeleton } from '@/components/ui/Skeleton';
+import HeroSlider from '@/components/home/HeroSlider';
 import { useQuery } from '@tanstack/react-query';
 import { IProduct } from '@/types';
 
@@ -82,60 +83,8 @@ export default function HomePage() {
 
   return (
     <div>
-      {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800">
-        <div className="absolute inset-0 bg-[url('/images/pattern.svg')] opacity-10" />
-        <div className="relative mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8">
-          <div className="grid items-center gap-12 lg:grid-cols-2">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-            >
-              <span className="mb-4 inline-block rounded-full bg-blue-500/30 px-4 py-2 text-sm font-medium text-white">
-                New Season Collection
-              </span>
-              <h1 className="mb-6 text-4xl font-bold text-white sm:text-5xl lg:text-6xl">
-                Discover Your
-                <br />
-                <span className="text-yellow-400">Perfect Style</span>
-              </h1>
-              <p className="mb-8 max-w-lg text-lg text-blue-100">
-                Explore our curated collection of premium products. From electronics to
-                fashion, find everything you need at unbeatable prices.
-              </p>
-              <div className="flex flex-wrap gap-4">
-                <Link href="/products">
-                  <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-100">
-                    Shop Now
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </Button>
-                </Link>
-                <Link href="/products?featured=true">
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    className="border-white text-white hover:bg-white/10"
-                  >
-                    View Featured
-                  </Button>
-                </Link>
-              </div>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="relative hidden lg:block"
-            >
-              <div className="relative h-[500px] w-full">
-                <div className="absolute right-0 top-0 h-72 w-72 rounded-full bg-yellow-400/20 blur-3xl" />
-                <div className="absolute bottom-0 left-0 h-72 w-72 rounded-full bg-blue-400/20 blur-3xl" />
-              </div>
-            </motion.div>
-          </div>
-        </div>
-      </section>
+      {/* Hero Slider */}
+      <HeroSlider />
 
       {/* Features Section */}
       <section className="border-b border-gray-200 bg-white py-8 dark:border-gray-800 dark:bg-gray-900">
