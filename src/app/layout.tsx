@@ -8,6 +8,7 @@ import CartDrawer from '@/components/cart/CartDrawer';
 import NewsletterPopup from '@/components/newsletter/NewsletterPopup';
 import CompareDrawer from '@/components/product/CompareDrawer';
 import CompareFloatingButton from '@/components/product/CompareFloatingButton';
+import GoogleAnalytics from '@/components/analytics/GoogleAnalytics';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -52,6 +53,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <GoogleAnalytics />
+      </head>
       <body className={`${inter.variable} font-sans antialiased`}>
         <Providers>
           <div className="flex min-h-screen flex-col bg-gray-50 dark:bg-gray-950">

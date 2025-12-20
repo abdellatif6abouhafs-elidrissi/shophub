@@ -349,7 +349,7 @@ export default function AdminRefundsPage() {
                           </p>
                         </td>
                         <td className="px-6 py-4">
-                          <Badge variant="secondary" className="capitalize">
+                          <Badge variant="default" className="capitalize">
                             {refund.type}
                           </Badge>
                           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">

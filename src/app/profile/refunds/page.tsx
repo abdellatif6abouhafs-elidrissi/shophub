@@ -148,7 +148,7 @@ export default function UserRefundsPage() {
                           <h3 className="font-semibold text-gray-900 dark:text-white">
                             {refund.requestNumber}
                           </h3>
-                          <Badge variant="secondary" className="capitalize">
+                          <Badge variant="default" className="capitalize">
                             {refund.type}
                           </Badge>
                         </div>
