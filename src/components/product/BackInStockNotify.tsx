@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useSession } from 'next-auth/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bell, Mail, CheckCircle, Loader2, X } from 'lucide-react';
 import Button from '@/components/ui/Button';
@@ -13,8 +14,9 @@ interface BackInStockNotifyProps {
 }
 
 export default function BackInStockNotify({ productId, productName }: BackInStockNotifyProps) {
+  const { data: session } = useSession();
   const [isOpen, setIsOpen] = useState(false);
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(session?.user?.email || '');
   const [isLoading, setIsLoading] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(false);
 
@@ -22,47 +24,42 @@ export default function BackInStockNotify({ productId, productName }: BackInStoc
     e.preventDefault();
 
     if (!email) {
-      toast.error('Please enter your email');
+      toast.error('Dkhel email dyalk');
       return;
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      toast.error('Please enter a valid email');
+      toast.error('Email machi sahih');
       return;
     }
 
     setIsLoading(true);
 
-    // Simulate API call (replace with actual notification API)
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    try {
+      const res = await fetch('/api/stock-alerts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, productId }),
+      });
 
-    // Save to localStorage for demo purposes
-    if (typeof window !== 'undefined') {
-      try {
-        const saved = localStorage.getItem('stock-notifications') || '[]';
-        const notifications = JSON.parse(saved);
-        notifications.push({
-          productId,
-          productName,
-          email,
-          createdAt: new Date().toISOString(),
-        });
-        localStorage.setItem('stock-notifications', JSON.stringify(notifications));
-      } catch (e) {
-        console.error('Error saving notification:', e);
+      const data = await res.json();
+
+      if (data.success) {
+        setIsSubscribed(true);
+        toast.success('Ghadi n3lmouk mli product irj3!');
+        setTimeout(() => {
+          setIsOpen(false);
+          setIsSubscribed(false);
+        }, 2500);
+      } else {
+        toast.error(data.error || 'Kayn chi mochkil');
       }
+    } catch (error) {
+      toast.error('Kayn chi mochkil, 3awed');
+    } finally {
+      setIsLoading(false);
     }
-
-    setIsLoading(false);
-    setIsSubscribed(true);
-    toast.success("We'll notify you when it's back in stock!");
-
-    setTimeout(() => {
-      setIsOpen(false);
-      setIsSubscribed(false);
-      setEmail('');
-    }, 2000);
   };
 
   return (
@@ -74,7 +71,7 @@ export default function BackInStockNotify({ productId, productName }: BackInStoc
         onClick={() => setIsOpen(true)}
       >
         <Bell className="mr-2 h-4 w-4" />
-        Notify Me When Available
+        3lemni mli irj3 disponible
       </Button>
 
       {/* Modal */}

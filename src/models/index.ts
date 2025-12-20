@@ -5,6 +5,7 @@ export { default as Cart } from './Cart';
 export { default as Order } from './Order';
 export { default as Review } from './Review';
 export { default as Notification } from './Notification';
+export { default as StockAlert } from './StockAlert';
 
 export type { IUserDocument, IAddress } from './User';
 export type { IProductDocument, IProductVariant } from './Product';
@@ -13,3 +14,4 @@ export type { ICartDocument, ICartItem } from './Cart';
 export type { IOrderDocument, IOrderItem, IOrderAddress } from './Order';
 export type { IReviewDocument } from './Review';
 export type { INotificationDocument, NotificationType } from './Notification';
+export type { IStockAlertDocument } from './StockAlert';

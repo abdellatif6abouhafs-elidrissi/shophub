@@ -806,3 +806,79 @@ export async function sendLowStockAlertEmail(
     html,
   });
 }
+
+// Back in Stock Notification Email
+export async function sendBackInStockEmail(
+  email: string,
+  productName: string,
+  productSlug: string,
+  productImage?: string
+) {
+  const productUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/products/${productSlug}`;
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+          body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f5f5f5; }
+          .wrapper { background-color: #f5f5f5; padding: 40px 20px; }
+          .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
+          .header { background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 30px; text-align: center; }
+          .header h1 { color: white; margin: 0; font-size: 24px; }
+          .icon { width: 60px; height: 60px; background: white; border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; }
+          .content { padding: 30px; text-align: center; }
+          .product-box { background: #f9fafb; border-radius: 12px; padding: 20px; margin: 20px 0; }
+          .product-image { width: 150px; height: 150px; object-fit: cover; border-radius: 8px; margin-bottom: 15px; }
+          .product-name { font-size: 18px; font-weight: bold; color: #333; margin: 0; }
+          .footer { background-color: #f9fafb; padding: 20px 30px; text-align: center; font-size: 12px; color: #666; border-top: 1px solid #e5e7eb; }
+          .button { display: inline-block; padding: 16px 40px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white !important; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px; }
+        </style>
+      </head>
+      <body>
+        <div class="wrapper">
+          <div class="container">
+            <div class="header">
+              <div class="icon">
+                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                  <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+              </div>
+              <h1>Rj3 Disponible! 🎉</h1>
+            </div>
+            <div class="content">
+              <p style="font-size: 16px; color: #666;">Khabar Mzyan!</p>
+              <p>Product li knti kattsna rj3 disponible daba!</p>
+
+              <div class="product-box">
+                ${productImage ? `<img src="${productImage}" alt="${productName}" class="product-image" />` : ''}
+                <p class="product-name">${productName}</p>
+              </div>
+
+              <p style="color: #666;">Sir daba chri 9bel ma ysali!</p>
+
+              <a href="${productUrl}" class="button">Chri Daba</a>
+
+              <p style="margin-top: 30px; font-size: 14px; color: #999;">
+                Stock mahdoud, sir daba!
+              </p>
+            </div>
+            <div class="footer">
+              <p>Hadi email automatique mn ${APP_NAME}.</p>
+              <p>&copy; ${new Date().getFullYear()} ${APP_NAME}. All rights reserved.</p>
+            </div>
+          </div>
+        </div>
+      </body>
+    </html>
+  `;
+
+  return sendEmail({
+    to: email,
+    subject: `🎉 ${productName} Rj3 Disponible!`,
+    html,
+  });
+}
