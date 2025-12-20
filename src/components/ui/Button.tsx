@@ -33,9 +33,9 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       secondary:
         'bg-gray-200 text-gray-900 hover:bg-gray-300 focus:ring-gray-500 dark:bg-gray-700 dark:text-gray-100 dark:hover:bg-gray-600',
       outline:
-        'border-2 border-gray-300 bg-transparent hover:bg-gray-100 focus:ring-gray-500 dark:border-gray-600 dark:hover:bg-gray-800',
+        'border-2 border-gray-300 bg-transparent text-gray-900 hover:bg-gray-100 focus:ring-gray-500 dark:border-gray-600 dark:text-gray-100 dark:hover:bg-gray-800',
       ghost:
-        'bg-transparent hover:bg-gray-100 focus:ring-gray-500 dark:hover:bg-gray-800',
+        'bg-transparent text-gray-900 hover:bg-gray-100 focus:ring-gray-500 dark:text-gray-100 dark:hover:bg-gray-800',
       danger:
         'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500 dark:bg-red-500 dark:hover:bg-red-600',
     };
