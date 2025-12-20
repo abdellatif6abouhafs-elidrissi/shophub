@@ -390,3 +390,145 @@ export async function sendOrderShippedEmail(
 ) {
   return sendOrderStatusEmail(email, name, orderNumber, 'shipped', trackingNumber);
 }
+
+// Email Verification
+export async function sendVerificationEmail(
+  email: string,
+  name: string,
+  verificationUrl: string
+) {
+  const html = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+          body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f5f5f5; }
+          .wrapper { background-color: #f5f5f5; padding: 40px 20px; }
+          .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
+          .header { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); padding: 30px; text-align: center; }
+          .header h1 { color: white; margin: 0; font-size: 24px; }
+          .icon { width: 60px; height: 60px; background: white; border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; }
+          .content { padding: 40px 30px; text-align: center; }
+          .button { display: inline-block; padding: 16px 40px; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white !important; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px; margin: 25px 0; }
+          .button:hover { opacity: 0.9; }
+          .footer { background-color: #f9fafb; padding: 20px 30px; text-align: center; font-size: 12px; color: #666; border-top: 1px solid #e5e7eb; }
+          .link-text { word-break: break-all; font-size: 12px; color: #666; background: #f3f4f6; padding: 10px; border-radius: 6px; margin-top: 20px; }
+        </style>
+      </head>
+      <body>
+        <div class="wrapper">
+          <div class="container">
+            <div class="header">
+              <div class="icon">
+                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                  <polyline points="22,6 12,13 2,6"></polyline>
+                </svg>
+              </div>
+              <h1>Verify Your Email</h1>
+            </div>
+            <div class="content">
+              <h2 style="margin-top: 0; color: #333;">Welcome to ${APP_NAME}!</h2>
+              <p style="color: #666;">Hi ${name},</p>
+              <p style="color: #666;">Thank you for signing up! Please verify your email address by clicking the button below:</p>
+              <a href="${verificationUrl}" class="button">Verify Email Address</a>
+              <p style="color: #888; font-size: 14px;">This link will expire in 24 hours.</p>
+              <div class="link-text">
+                <p style="margin: 0 0 5px; font-weight: 500;">Can't click the button? Copy this link:</p>
+                ${verificationUrl}
+              </div>
+            </div>
+            <div class="footer">
+              <p>If you didn't create an account with ${APP_NAME}, you can safely ignore this email.</p>
+              <p>&copy; ${new Date().getFullYear()} ${APP_NAME}. All rights reserved.</p>
+            </div>
+          </div>
+        </div>
+      </body>
+    </html>
+  `;
+
+  return sendEmail({
+    to: email,
+    subject: `Verify your email for ${APP_NAME}`,
+    html,
+  });
+}
+
+// Welcome Email (after verification)
+export async function sendWelcomeEmail(email: string, name: string) {
+  const html = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+          body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f5f5f5; }
+          .wrapper { background-color: #f5f5f5; padding: 40px 20px; }
+          .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
+          .header { background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 40px 30px; text-align: center; }
+          .header h1 { color: white; margin: 0; font-size: 28px; }
+          .content { padding: 40px 30px; }
+          .feature { display: flex; align-items: flex-start; margin-bottom: 20px; }
+          .feature-icon { width: 40px; height: 40px; background: #eff6ff; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-right: 15px; flex-shrink: 0; }
+          .button { display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white !important; text-decoration: none; border-radius: 8px; font-weight: 600; }
+          .footer { background-color: #f9fafb; padding: 20px 30px; text-align: center; font-size: 12px; color: #666; border-top: 1px solid #e5e7eb; }
+        </style>
+      </head>
+      <body>
+        <div class="wrapper">
+          <div class="container">
+            <div class="header">
+              <h1>Welcome to ${APP_NAME}! 🎉</h1>
+            </div>
+            <div class="content">
+              <p style="font-size: 18px;">Hi ${name},</p>
+              <p>Your email has been verified and your account is now fully activated. Here's what you can do:</p>
+
+              <div class="feature">
+                <div class="feature-icon">🛍️</div>
+                <div>
+                  <h4 style="margin: 0 0 5px;">Browse Products</h4>
+                  <p style="margin: 0; color: #666; font-size: 14px;">Explore our wide range of products and find what you need.</p>
+                </div>
+              </div>
+
+              <div class="feature">
+                <div class="feature-icon">❤️</div>
+                <div>
+                  <h4 style="margin: 0 0 5px;">Save to Wishlist</h4>
+                  <p style="margin: 0; color: #666; font-size: 14px;">Save your favorite items for later.</p>
+                </div>
+              </div>
+
+              <div class="feature">
+                <div class="feature-icon">📦</div>
+                <div>
+                  <h4 style="margin: 0 0 5px;">Track Orders</h4>
+                  <p style="margin: 0; color: #666; font-size: 14px;">Keep track of your orders and delivery status.</p>
+                </div>
+              </div>
+
+              <div style="text-align: center; margin-top: 30px;">
+                <a href="${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/products" class="button">Start Shopping</a>
+              </div>
+            </div>
+            <div class="footer">
+              <p>Need help? Contact our support team anytime.</p>
+              <p>&copy; ${new Date().getFullYear()} ${APP_NAME}. All rights reserved.</p>
+            </div>
+          </div>
+        </div>
+      </body>
+    </html>
+  `;
+
+  return sendEmail({
+    to: email,
+    subject: `Welcome to ${APP_NAME}! 🎉`,
+    html,
+  });
+}

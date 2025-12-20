@@ -20,6 +20,8 @@ export interface IUserDocument extends Document {
   image?: string;
   role: 'user' | 'admin';
   isVerified: boolean;
+  verificationToken?: string;
+  verificationTokenExpires?: Date;
   addresses: IAddress[];
   resetPasswordToken?: string;
   resetPasswordExpires?: Date;
@@ -74,6 +76,8 @@ const userSchema = new Schema<IUserDocument>(
       type: Boolean,
       default: false,
     },
+    verificationToken: String,
+    verificationTokenExpires: Date,
     addresses: [addressSchema],
     resetPasswordToken: String,
     resetPasswordExpires: Date,

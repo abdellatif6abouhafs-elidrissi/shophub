@@ -2,7 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from '@/lib/db';
 import User from '@/models/User';
 import { notifyNewUser } from '@/lib/notifications';
+import { sendVerificationEmail } from '@/lib/email';
 import { z } from 'zod';
+import crypto from 'crypto';
 
 const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters').max(50),
@@ -36,12 +38,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create new user
+    // Generate verification token
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const hashedToken = crypto.createHash('sha256').update(verificationToken).digest('hex');
+
+    // Create new user with verification token
     const user = await User.create({
       name,
       email,
       password,
+      verificationToken: hashedToken,
+      verificationTokenExpires: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
     });
+
+    // Send verification email
+    try {
+      const verificationUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/verify-email?token=${verificationToken}`;
+      await sendVerificationEmail(email, name, verificationUrl);
+    } catch (emailError) {
+      console.error('Failed to send verification email:', emailError);
+    }
 
     // Notify admin about new user registration
     try {
@@ -53,11 +69,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         success: true,
-        message: 'Registration successful',
+        message: 'Registration successful. Please check your email to verify your account.',
         data: {
           id: user._id.toString(),
           name: user.name,
           email: user.email,
+          isVerified: false,
         },
       },
       { status: 201 }
