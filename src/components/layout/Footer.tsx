@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Facebook, Twitter, Instagram, Youtube, Mail, MapPin, Phone } from 'lucide-react';
+import { Facebook, Twitter, Instagram, Youtube, Mail, MapPin, Phone, Shield, Truck, RefreshCw, Lock } from 'lucide-react';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -85,6 +85,14 @@ export default function Footer() {
                   className="text-sm text-gray-600 transition-colors hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400"
                 >
                   In Stock
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/blog"
+                  className="text-sm text-gray-600 transition-colors hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400"
+                >
+                  Blog
                 </Link>
               </li>
             </ul>
@@ -183,8 +191,50 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Bottom Section */}
+        {/* Trust Badges */}
         <div className="mt-12 border-t border-gray-200 pt-8 dark:border-gray-800">
+          <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
+            <div className="flex items-center gap-3 rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
+                <Lock className="h-6 w-6 text-green-600" />
+              </div>
+              <div>
+                <p className="font-semibold text-gray-900 dark:text-white">Secure Payment</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">SSL Encrypted</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30">
+                <Truck className="h-6 w-6 text-blue-600" />
+              </div>
+              <div>
+                <p className="font-semibold text-gray-900 dark:text-white">Fast Shipping</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">2-5 Business Days</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-orange-100 dark:bg-orange-900/30">
+                <RefreshCw className="h-6 w-6 text-orange-600" />
+              </div>
+              <div>
+                <p className="font-semibold text-gray-900 dark:text-white">Easy Returns</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">30-Day Policy</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-900/30">
+                <Shield className="h-6 w-6 text-purple-600" />
+              </div>
+              <div>
+                <p className="font-semibold text-gray-900 dark:text-white">Buyer Protection</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Money-Back Guarantee</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom Section */}
+        <div className="mt-8 border-t border-gray-200 pt-8 dark:border-gray-800">
           <div className="flex flex-col items-center justify-between space-y-4 md:flex-row md:space-y-0">
             <p className="text-sm text-gray-600 dark:text-gray-400">
               &copy; {currentYear} ShopHub. All rights reserved.

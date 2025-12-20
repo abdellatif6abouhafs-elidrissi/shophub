@@ -9,6 +9,7 @@ import ProductCard from '@/components/product/ProductCard';
 import RecentlyViewed from '@/components/product/RecentlyViewed';
 import { ProductGridSkeleton } from '@/components/ui/Skeleton';
 import HeroSlider from '@/components/home/HeroSlider';
+import Testimonials from '@/components/home/Testimonials';
 import { useQuery } from '@tanstack/react-query';
 import { IProduct } from '@/types';
 
@@ -228,6 +229,9 @@ export default function HomePage() {
 
       {/* Recently Viewed Section */}
       <RecentlyViewed />
+
+      {/* Testimonials Section */}
+      <Testimonials />
 
       {/* Newsletter Section */}
       <section className="bg-blue-600 py-16">
