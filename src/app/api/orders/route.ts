@@ -8,6 +8,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { z } from 'zod';
 import { sendOrderConfirmationEmail } from '@/lib/email';
+import { notifyOrderPlaced } from '@/lib/notifications';
 
 // GET - Fetch user's orders or all orders (admin)
 export async function GET(request: NextRequest) {
@@ -252,6 +253,13 @@ export async function POST(request: NextRequest) {
     } catch (emailError) {
       // Log email error but don't fail the order
       console.error('Failed to send order confirmation email:', emailError);
+    }
+
+    // Send notification to admin about new order
+    try {
+      await notifyOrderPlaced(session.user.id, order._id.toString(), order.orderNumber, total);
+    } catch (notifyError) {
+      console.error('Failed to send order notification:', notifyError);
     }
 
     return NextResponse.json(

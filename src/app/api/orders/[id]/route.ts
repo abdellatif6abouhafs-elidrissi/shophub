@@ -5,6 +5,7 @@ import User from '@/models/User';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { sendOrderStatusEmail } from '@/lib/email';
+import { notifyOrderStatusChange } from '@/lib/notifications';
 import { z } from 'zod';
 
 // GET - Fetch single order
@@ -117,7 +118,7 @@ export async function PUT(
 
     // Send email notification for status updates
     if (validation.data.orderStatus) {
-      const user = order.user as unknown as { name: string; email: string };
+      const user = order.user as unknown as { _id: string; name: string; email: string };
       await sendOrderStatusEmail(
         user.email,
         user.name,
@@ -125,6 +126,18 @@ export async function PUT(
         validation.data.orderStatus,
         order.trackingNumber
       );
+
+      // Send in-app notification to user
+      try {
+        await notifyOrderStatusChange(
+          user._id.toString(),
+          order._id.toString(),
+          order.orderNumber,
+          validation.data.orderStatus
+        );
+      } catch (notifyError) {
+        console.error('Failed to send status notification:', notifyError);
+      }
     }
 
     return NextResponse.json({ success: true, data: order });
@@ -187,7 +200,7 @@ export async function DELETE(
     order.orderStatus = 'cancelled';
     await order.save();
 
-    // Send cancellation email
+    // Send cancellation email and notification
     const user = await User.findById(order.user);
     if (user) {
       await sendOrderStatusEmail(
@@ -196,6 +209,18 @@ export async function DELETE(
         order.orderNumber,
         'cancelled'
       );
+
+      // Send in-app notification
+      try {
+        await notifyOrderStatusChange(
+          user._id.toString(),
+          order._id.toString(),
+          order.orderNumber,
+          'cancelled'
+        );
+      } catch (notifyError) {
+        console.error('Failed to send cancellation notification:', notifyError);
+      }
     }
 
     return NextResponse.json({
