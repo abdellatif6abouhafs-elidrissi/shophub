@@ -191,27 +191,38 @@ export default function Footer() {
             <p className="text-sm text-gray-600 dark:text-gray-400">
               &copy; {currentYear} ShopHub. All rights reserved.
             </p>
-            <div className="flex items-center space-x-6">
-              <img
-                src="/images/payment/visa.svg"
-                alt="Visa"
-                className="h-8 opacity-50 grayscale transition-all hover:opacity-100 hover:grayscale-0"
-              />
-              <img
-                src="/images/payment/mastercard.svg"
-                alt="Mastercard"
-                className="h-8 opacity-50 grayscale transition-all hover:opacity-100 hover:grayscale-0"
-              />
-              <img
-                src="/images/payment/paypal.svg"
-                alt="PayPal"
-                className="h-8 opacity-50 grayscale transition-all hover:opacity-100 hover:grayscale-0"
-              />
-              <img
-                src="/images/payment/stripe.svg"
-                alt="Stripe"
-                className="h-8 opacity-50 grayscale transition-all hover:opacity-100 hover:grayscale-0"
-              />
+            <div className="flex items-center space-x-4">
+              {/* Visa */}
+              <div className="flex h-8 w-12 items-center justify-center rounded bg-gray-100 dark:bg-gray-800" title="Visa">
+                <svg viewBox="0 0 48 32" className="h-5 w-8">
+                  <rect fill="#1A1F71" width="48" height="32" rx="4"/>
+                  <path fill="#FFFFFF" d="M19.5 21h-2.7l1.7-10.5h2.7L19.5 21zm11.2-10.2c-.5-.2-1.4-.4-2.4-.4-2.7 0-4.6 1.4-4.6 3.5 0 1.5 1.4 2.4 2.4 2.9 1.1.5 1.4.9 1.4 1.3 0 .7-.9 1-1.7 1-1.1 0-1.7-.2-2.6-.6l-.4-.2-.4 2.4c.7.3 1.9.5 3.1.5 2.9 0 4.7-1.4 4.7-3.6 0-1.2-.8-2.1-2.4-2.9-1-.5-1.6-.8-1.6-1.3 0-.4.5-.9 1.6-.9.9 0 1.6.2 2.1.4l.3.1.4-2.2zm7.1-.3h-2.1c-.7 0-1.2.2-1.5.9l-4.2 10.1h2.9l.6-1.6h3.6l.3 1.6h2.6l-2.2-10.9zm-3.5 7l1.5-4 .8 4h-2.3zm-17.8-7L14 17.7l-.3-1.4c-.5-1.6-2-3.4-3.7-4.2l2.5 9h2.9l4.4-10.5h-2.9z"/>
+                </svg>
+              </div>
+              {/* Mastercard */}
+              <div className="flex h-8 w-12 items-center justify-center rounded bg-gray-100 dark:bg-gray-800" title="Mastercard">
+                <svg viewBox="0 0 48 32" className="h-5 w-8">
+                  <rect fill="#000000" width="48" height="32" rx="4"/>
+                  <circle fill="#EB001B" cx="18" cy="16" r="8"/>
+                  <circle fill="#F79E1B" cx="30" cy="16" r="8"/>
+                  <path fill="#FF5F00" d="M24 10.3c1.9 1.5 3 3.5 3 5.7s-1.1 4.2-3 5.7c-1.9-1.5-3-3.5-3-5.7s1.1-4.2 3-5.7z"/>
+                </svg>
+              </div>
+              {/* PayPal */}
+              <div className="flex h-8 w-12 items-center justify-center rounded bg-gray-100 dark:bg-gray-800" title="PayPal">
+                <svg viewBox="0 0 48 32" className="h-5 w-8">
+                  <rect fill="#003087" width="48" height="32" rx="4"/>
+                  <path fill="#FFFFFF" d="M18.5 10h4.2c2.3 0 3.9 1.1 3.6 3.5-.4 3-2.4 4.5-5 4.5h-1.1c-.4 0-.7.3-.8.7l-.6 3.8c0 .2-.2.4-.4.4h-2.6c-.3 0-.4-.2-.4-.5l1.6-11.8c.1-.4.4-.6.8-.6h.7zm4 2.3h-1.3l-.7 4h1c1.5 0 2.5-.8 2.7-2.3.2-1.2-.4-1.7-1.7-1.7z"/>
+                  <path fill="#009CDE" d="M29.5 10h4.2c2.3 0 3.9 1.1 3.6 3.5-.4 3-2.4 4.5-5 4.5h-1.1c-.4 0-.7.3-.8.7l-.6 3.8c0 .2-.2.4-.4.4h-2.6c-.3 0-.4-.2-.4-.5l1.6-11.8c.1-.4.4-.6.8-.6h.7zm4 2.3h-1.3l-.7 4h1c1.5 0 2.5-.8 2.7-2.3.2-1.2-.4-1.7-1.7-1.7z"/>
+                </svg>
+              </div>
+              {/* Stripe */}
+              <div className="flex h-8 w-12 items-center justify-center rounded bg-gray-100 dark:bg-gray-800" title="Stripe">
+                <svg viewBox="0 0 48 32" className="h-5 w-8">
+                  <rect fill="#635BFF" width="48" height="32" rx="4"/>
+                  <path fill="#FFFFFF" d="M22.5 13.5c0-.8.7-1.2 1.8-1.2 1.6 0 3.6.5 5.2 1.4V9.5c-1.7-.7-3.5-1-5.2-1-4.3 0-7.1 2.2-7.1 5.9 0 5.8 8 4.9 8 7.4 0 1-.8 1.3-2 1.3-1.7 0-4-.7-5.7-1.7v4.3c1.9.8 3.9 1.2 5.7 1.2 4.4 0 7.4-2.2 7.4-5.9 0-6.2-8-5.1-8-7.5z"/>
+                </svg>
+              </div>
             </div>
           </div>
         </div>
